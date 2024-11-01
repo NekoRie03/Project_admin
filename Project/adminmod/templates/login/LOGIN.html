@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Page</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
+    <div class="container">
+        <img src="{% static 'adminmod/images/logo.png' %}" alt="Profile Picture Placeholder"/>
+        <h1>WELCOME!</h1>
+        <hr/>
+        <label for="id-number">ID Number:</label>
+        <input id="id-number" name="id-number" type="text"/>
+        
+        <label for="password">Password:</label>
+        <input id="password" name="password" type="password"/>
+        
+        <button type="button">LOG IN</button>
+        
+        <div class="links">
+            No Account? <a href="{% url 'signup' %}">Sign Up Here</a>
+            <br/>
+            <a href="{% url 'forget' %}">Forgot Password</a>
+        </div>
+    </div>
+</body>
+</html>

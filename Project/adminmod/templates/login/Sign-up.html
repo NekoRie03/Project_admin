@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/signup.css' %}">
+</head>
+<body>
+    <div class="signup-container">
+        <img src="{% static 'adminmod/images/logo.png' %}" alt="Logo"/>
+        <h2>SIGN UP</h2>
+        <hr/>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">SIGN UP</button>
+        </form>
+    </div>
+</body>
+</html>
