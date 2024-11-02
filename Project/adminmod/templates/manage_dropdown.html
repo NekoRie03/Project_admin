@@ -1,0 +1,84 @@
+<h2>Manage Dropdown Options</h2>
+
+<!-- Form to Add New Program -->
+<form method="POST">
+    {% csrf_token %}
+    <label for="new_program">Add New Program:</label>
+    <input type="text" id="new_program" name="new_program" placeholder="Enter new program" required>
+    <button type="submit" name="add_program">Add Program</button>
+</form>
+
+<!-- Form to Add New Course -->
+<form method="POST">
+    {% csrf_token %}
+    <label for="new_course">Add New Course:</label>
+    <select name="program_id" required>
+        <option value="">Select Program</option>
+        {% for program in program_options %}
+            <option value="{{ program.id }}">{{ program.program1 }}</option>
+        {% endfor %}
+    </select>
+    <input type="text" id="new_course" name="new_course" placeholder="Enter new course" required>
+    <button type="submit" name="add_course">Add Course</button>
+</form>
+
+<!-- Form to Add New Section -->
+<form method="POST">
+    {% csrf_token %}
+    <label for="new_section">Add New Section:</label>
+    <select name="course_id" required>
+        <option value="">Select Course</option>
+        {% for course in course_options %}
+            <option value="{{ course.id }}">{{ course.course_name }}</option>
+        {% endfor %}
+    </select>
+    <input type="text" id="new_section" name="new_section" placeholder="Enter new section" required>
+    <button type="submit" name="add_section">Add Section</button>
+</form>
+
+<h3>Current Options</h3>
+
+<!-- Display current programs -->
+<h4>Programs</h4>
+<ul>
+    {% for program in program_options %}
+        <li>
+            {{ program.program1 }}
+            <form method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this program?');">
+                {% csrf_token %}
+                <input type="hidden" name="delete_program" value="{{ program.id }}">
+                <button type="submit" style="background-color:red;color:white;">Delete</button>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+
+<!-- Display current courses -->
+<h4>Courses</h4>
+<ul>
+    {% for course in course_options %}
+        <li>
+            {{ course.course_name }}
+            <form method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this course?');">
+                {% csrf_token %}
+                <input type="hidden" name="delete_course" value="{{ course.id }}">
+                <button type="submit" style="background-color:red;color:white;">Delete</button>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+
+<!-- Display current sections -->
+<h4>Sections</h4>
+<ul>
+    {% for section in section_options %}
+        <li>
+            {{ section.section_name }}
+            <form method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this section?');">
+                {% csrf_token %}
+                <input type="hidden" name="delete_section" value="{{ section.id }}">
+                <button type="submit" style="background-color:red;color:white;">Delete</button>
+            </form>
+        </li>
+    {% endfor %}
+</ul>

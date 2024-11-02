@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+ <head>
+ </head>
+ <body>
+  {% load static %}
+  <div class="container">
+   <div class="button-group">
+    <a href="{% url 'guardsearch2' %}">
+    <button class="button">
+      <img src="{% static 'adminmod/images/foldericon.png' %}" alt="Profile  Picture Placeholder" height="30" width="30"/>
+     REPORT FILING
+    </button>
+    </a>
+    <a href="{% url 'notif' %}">
+      <button class="button">
+        <img src="{% static 'adminmod/images/paper.png' %}" alt="Profile  Picture Placeholder" height="30" width="30"/>
+       REPORT STATUS
+      </button>
+    </a>
+   </div>
+   <div class="log-out">
+    <a href="{% url 'login' %}">
+    <img src="{% static 'adminmod/images/sign-out-alt.png' %}" alt="Profile Picture Placeholder" height="30" width="30"/>
+    </a> 
+  </div>
+   <div class="input-group">
+    <div class="label">
+     Student ID:
+    </div>
+    <div class="search-container">
+     <input type="text" value="ID-XX-XXXX"/>
+     <a href="{% url 'addstudent' %}"><button class="search-button">
+      SEARCH
+     </button>
+    </div>
+    </a>
+   </div>
+   <div class="input-group">
+    <div class="label">
+     Description of Offense:
+    </div>
+    <div class="label">
+     Incident Date
+    </div>
+    <input type="date"/>
+    <div class="label">
+     Violation Type:
+    </div>
+    <input type="text"/>
+   </div>
+   <a href="{% url 'reportsummary' %}"><button class="submit-button">
+    SUBMIT
+   </button>
+  </div>
+  </a>
+ </body>
+</html>

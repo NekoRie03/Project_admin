@@ -1,0 +1,25 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/manage_violations.css' %}">
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Violations</title>
+</head>
+<body>
+    <h2>Manage Violations</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Add Violation</button>
+    </form>
+
+    <h3>Existing Violations</h3>
+    <ul>
+        {% for violation in violations %}
+        <li>{{ violation.name }} - {{ violation.violation_type }} 
+            <a href="{% url 'edit_violation' violation.id %}">Edit</a>
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

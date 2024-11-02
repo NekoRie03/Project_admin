@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Guard-Notification</title>
+        <link rel="#" href="#">
+    </head>
+    <body>
+        {% load static %}
+        <div class="nav-buttons">
+           <a href="{% url 'guardsearch2' %}">
+            <button class="button">
+                <img src="{% static 'adminmod/images/foldericon.png' %}" alt="Profile  Picture Placeholder" height="30" width="30"/>
+               REPORT FILING
+              </button>
+              </a>
+              <a href="{% url 'notif' %}">
+                <button class="button">
+                  <img src="{% static 'adminmod/images/paper.png' %}" alt="Profile  Picture Placeholder" height="30" width="30"/>
+                 REPORT STATUS
+                </button>
+              </a>
+        </div>
+        <div class="log-out">
+            <a href="#">
+            <img src="{% static 'adminmod/images/sign-out-alt.png' %}" alt="Profile Picture Placeholder" height="30" width="30"/>
+            </a> 
+          </div>
+        <div>
+            <label for="Reviewed">Reviewed</label>
+            <div class="offense">
+                <div class="row">
+                    <div class="col">
+                        <p>Date:</p>
+                    </div>
+                    <div class="col">
+                        <p>Student ID:</p>
+                        <p>Violation:</p>
+                        <p>Violation Type:</p>
+                    </div>
+                    <div class="col">
+                        <p>Reported By:</p>
+                    </div>
+                    <div class="col">
+                        <a href="{% url 'reportsummary' %}">
+                            <button class="appeal-button">VIEW</button>
+                        </a>
+                    </div>
+                    <div class="offense">
+                        <div class="row">
+                            <div class="col">
+                                <p>Date:</p>
+                            </div>
+                            <div class="col">
+                                <p>Student ID:</p>
+                                <p>Violation:</p>
+                                <p>Violation Type:</p>
+                            </div>
+                            <div class="col">
+                                <p>Reported By:</p>
+                            </div>
+                                <div class="col">
+                                    <a href="{% url 'reportsummary' %}">
+                                        <button class="appeal-button">VIEW</button>
+                                    </a>
+                                </div>
+            <hr>              
+            <div class="Pending">
+                <label for="Pending">Pending:</label>
+                <div class="offense">
+                    <div class="row">
+                        <div class="col">
+                            <p>Date:</p>
+                        </div>
+                        <div class="col">
+                            <p>Student ID:</p>
+                            <p>Violation:</p>
+                            <p>Violation Type:</p>
+                        </div>
+                        <div class="col">
+                            <p>Reported By:</p>
+                        </div>
+                        <div class="col">
+                            <a href="{% url 'reportsummary' %}">
+                                <button class="appeal-button">VIEW</button>
+                            </a>
+                        </div>
+                        <div class="offense">
+                            <div class="row">
+                                <div class="col">
+                                    <p>Date:</p>
+                                </div>
+                                <div class="col">
+                                    <p>Student ID:</p>
+                                    <p>Violation:</p>
+                                    <p>Violation Type:</p>
+                                </div>
+                                <div class="col">
+                                    <p>Reported By:</p>
+                                </div>
+                                <div class="col">
+                                    <a href="{% url 'reportsummary' %}">
+                                    <button class="appeal-button">VIEW</button>
+                                    </a>
+                                </div>
+
+            </div>
+        </div>
+    </body>
+</html>

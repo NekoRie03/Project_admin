@@ -1,0 +1,15 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Report Submitted Successfully!</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/report_success.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Report Submitted Successfully!</h1>
+        <p>Your report has been submitted. Thank you!</p>
+        <a href="{% url 'file_report' %}">Submit another report</a>
+    </div>
+</body>
+</html>

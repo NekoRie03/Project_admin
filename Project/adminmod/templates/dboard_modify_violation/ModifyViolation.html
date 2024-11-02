@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<head>
+    <title>Modify Violation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+</head>
+<body>
+    {% load static %}
+    <div class="container">
+        <div class="header">
+            <a href={% url 'dashboard'%}>
+                <img src="{% static 'adminmod/images/home.png' %}" alt="Profile Picture Placeholder" height="30" width="30"/>
+            </a>
+            <span>Modify Violation</span>
+        </div>
+        <div class="violations-list">
+            <div class="violations-list-header">Violations List:</div>
+            <div class="violation-item">
+                <div>
+                    <span class="info">TYPE</span>
+                    <span class="violation-name">VIOLATION NAME</span>
+                </div>
+                <div>
+                    <a href={% url 'Infopopup2'%}>
+                    <i class="fas fa-info-circle"></i>
+                    </a>
+                    <div class="modify" onclick="toggleDropdown(this)">MODIFY
+                        <div class="dropdown">
+                         <a href={% url 'EditViolation'%}><div>EDIT</div></a>   
+                            <div>REMOVE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="violation-item">
+                <div>
+                    <span class="info">TYPE</span>
+                    <span class="violation-name">VIOLATION NAME</span>
+                </div>
+                <div>
+                    <i class="fas fa-info-circle"></i>
+                    <div class="modify" onclick="toggleDropdown(this)">MODIFY
+                        <div class="dropdown">
+                            <a href={% url 'EditViolation'%}><div>EDIT</div></a>   
+                            <div>REMOVE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="violation-item">
+                <div>
+                    <span class="info">TYPE</span>
+                    <span class="violation-name">VIOLATION NAME</span>
+                </div>
+                <div>
+                    <i class="fas fa-info-circle"></i>
+                    <div class="modify" onclick="toggleDropdown(this)">MODIFY
+                        <div class="dropdown">
+                            <a href={% url 'EditViolation'%}><div>EDIT</div></a>   
+                            <div>REMOVE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="violation-item">
+                <div>
+                    <span class="info">TYPE</span>
+                    <span class="violation-name">VIOLATION NAME</span>
+                </div>
+                <div>
+                    <i class="fas fa-info-circle"></i>
+                    <div class="modify" onclick="toggleDropdown(this)">MODIFY
+                        <div class="dropdown">
+                            <a href={% url 'EditViolation'%}><div>EDIT</div></a>   
+                            <div>REMOVE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="violation-item">
+                <div>
+                    <span class="info">TYPE</span>
+                    <span class="violation-name">VIOLATION NAME</span>
+                </div>
+                <div>
+                    <i class="fas fa-info-circle"></i>
+                    <div class="modify" onclick="toggleDropdown(this)">MODIFY
+                        <div class="dropdown">
+                            <a href={% url 'EditViolation'%}><div>EDIT</div></a>   
+                            <div>REMOVE</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="add-button">
+            <a href={% url 'AddViolation'%}>
+            <button>ADD</button>
+            </a>
+        </div>
+    </div>
+    <script>
+        function toggleDropdown(element) {
+            const dropdown = element.querySelector('.dropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+        window.onclick = function(event) {
+            if (!event.target.matches('.modify')) {
+                const dropdowns = document.querySelectorAll('.dropdown');
+                dropdowns.forEach(dropdown => {
+                    dropdown.style.display = 'none';
+                });
+            }
+        }
+    </script>
+</body>
+</html>

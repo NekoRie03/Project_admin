@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>File Report</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'adminmod/css/file_report.css' %}">
+</head>
+<body>
+    <div class="report-container">
+        <img src="{% static 'adminmod/images/logo.png' %}" alt="Profile Picture Placeholder" class="logo"/>
+        <h1>File Report</h1>
+        
+
+        <!-- Search Form -->
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group search-bar-container">
+                <label>Search by Student ID:</label>
+                <div class="search-input-group">
+                    <input type="text" name="student_id_search" placeholder="Enter Student ID">
+                    <button type="submit">Search</button>
+                </div>
+            </div>
+        </form>
+
+
+        <!-- Display Search Results -->
+        {% if search_result %}
+            <div class="search-results">
+                <h2>Student Details</h2>
+                <p>ID Number: {{ search_result.idnumber }}</p>
+                <p>Name: {{ search_result.first_name }} {{ search_result.last_name }}</p>
+            </div>
+        {% elif search_result is not None %}
+            <p>No student found with that ID.</p>
+        {% endif %}
+        
+        <!-- Form to Submit a Report -->
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Student ID:</label>
+                <select name="student" required>
+                    {% for student in students %}
+                        <option value="{{ student.id }}" 
+                            {% if student.id == selected_student %}selected{% endif %}>
+                            {{ student.idnumber }} - {{ student.first_name }} {{ student.last_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Incident Date:</label>
+                <input type="date" name="incident_date" required>
+            </div>
+
+            <div class="form-group">
+                <label>Violation Type:</label>
+                <select name="violation_type" required>
+                    {% for violation in violation_types %}
+                        <option value="{{ violation.id }}">{{ violation.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit">Submit Report</button>
+        </form>
+    </div>
+</body>
+</html>

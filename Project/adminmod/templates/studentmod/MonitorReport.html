@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>
+   Monitor Report
+  </title>
+ </head>
+ <body>
+    {% load static %}
+  <div class="container">
+   <div class="header">
+    <a href="{% url 'studentstatus' %}">
+    <img src="{% static 'adminmod/images/home.png' %}" alt="Profile Picture Placeholder" height="30" width="30"/>
+    </a>
+    <h1>
+     Monitor Report
+    </h1>
+   </div>
+   <div class="offenses">
+    <p>
+     Offenses:
+    </p>
+    <div class="offense-details">
+     <div>
+      Offense:
+      <br/>
+      Type:
+      <br/>
+      Date:
+     </div>
+     <div>
+      Reported By:
+     </div>
+     </div>
+    </div>
+   </div>
+   <hr/>
+   <div class="upload-section">
+    <p>
+     Please upload a Proof of Act and Signature
+    </p>
+    <input type="file"/>
+    <input type="file"/>
+   </div>
+   <div class="submit-button">
+    <button>
+     SUBMIT
+    </button>
+   </div>
+  </div>
+ </body>
+</html>

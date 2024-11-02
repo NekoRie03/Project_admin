@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+
+ <head>
+  <title>
+   Monitor Report
+  </title>
+  <link href="#" rel="#"/>
+ </head>
+ <body>
+    {% load static %}
+  <div class="container">
+   <div class="header">
+    <img src="{% static 'adminmod/images/profile.png' %}" alt="Profile Picture Placeholder" height="100" width="100"/>
+    <div class="info">
+     <div class="name">
+      Juan Dela Cruz
+     </div>
+     <div class="log-out">
+      <a href="{% url 'login' %}">
+        <img src="{% static 'adminmod/images/sign-out-alt.png' %}" alt="Profile Picture Placeholder" height="30" width="30"/>
+       </a> 
+     </div>
+     <div>
+      Year &amp; Section:
+     </div>
+     <div>
+      Course:
+     </div>
+     <div>
+      Total Violations:
+     </div>
+    </div>
+   </div>
+   <div class="buttons">
+    <a href="{% url 'studentstatus' %}"><div class="button">
+      <img src="{% static 'adminmod/images/paper.png' %}" alt="Profile  Picture Placeholder" height="30" width="30"/>
+
+     STATUS
+    </div>
+    </a>
+    <a href="{% url 'studentsettings' %}">
+        <div class="button"> 
+          <img src="{% static 'adminmod/images/lock.png' %}" alt="Profile  Picture Placeholder" height="30" width="30"/>
+            PASSWORD
+        </div>
+    </a>
+   </div>
+   <div class="section">
+    <div class="title">
+     Most Recent Offense:
+    </div>
+    <div class="content">
+     <div>
+      Offense: mm/dd/yyyy
+     </div>
+     <div class="Info">
+      <a href="{% url 'infopopup' %}"><img src="{% static 'adminmod/images/triangle-warning.png' %}" alt="Profile Picture Placeholder" height="30" width="30"/></a>
+        <div class="text">
+     <div>
+      Sanction: Sanction
+     </div>
+    </div>
+   </div>
+   <div class="section">
+    <div class="title">
+     Remaining Days to Serve
+    </div>
+    <div class="content">
+     <div>
+      Days: XX
+     </div>
+     <div>
+      Hours: XX
+     </div>
+     <div>
+      Probation: Hours Required: Hours Served
+     </div>
+     <div>
+      Deadline: mm/dd/yyyy
+     </div>
+    </div>
+   </div>
+   <a href="{% url 'monitorreport' %}">
+   <div class="submit-button">
+    SUBMIT MONITOR REPORT
+   </div>
+  </a>
+   <div class="warning">
+    <a href="{% url 'infopopup3' %}"><img src="{% static 'adminmod/images/envelope.png' %}" alt="Profile Picture Placeholder" height="30" width="30"/>
+    <div class="text">
+     <div>
+      Warning
+     </div>
+     <div>
+      You are currently committing your NTH violation. If you receive another violation, you will be subject to a sanction.
+     </div>
+    </div>
+   </div>
+   <div class="offenses">
+    <div class="offense">
+     <div>
+      Offense:
+     </div>
+     <div>
+      Sanction: Date:
+     </div>
+     <div>
+      Reported By:
+     </div>
+     <a href="{% url 'reportsummarystudent' %}">
+        <div class="view-button"></div>
+            VIEW
+    </a>
+     </div>
+    </div>
+    <div class="offense">
+     <div>
+      Offense:
+     </div>
+     <div>
+       Sanction: <br>
+       Date:
+     </div>
+     <div>
+      Reported By:
+     </div>
+     <a href="{% url 'reportsummarystudent' %}">
+        <div class="view-button"></div>
+            VIEW
+    </a>
+     </div>
+    </div>
+    <div class="offense">
+     <div>
+      Offense:
+     </div>
+     <div>
+       Sanction: <br>
+       Date:
+     </div>
+     <div>
+      Reported By:
+     </div>
+     <a href="{% url 'reportsummarystudent' %}">
+        <div class="view-button"></div>
+            VIEW
+    </a>
+     </div>
+    </div>
+   </div>
+  </div>
+ </body>
+</html>

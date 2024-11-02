@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<head>
+</head>
+<body>
+    <div class="container">
+        <h1>EDIT VIOLATION</h1>
+        <div class="section-title">Violation Details</div>
+        <div class="line"></div>
+        <div class="input-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name">
+        </div>
+        <div class="radio-group">
+            <label for="type">Type:</label>
+            <input type="radio" id="major" name="type" value="major">
+            <label for="major">MAJOR</label>
+            <input type="radio" id="minor" name="type" value="minor">
+            <label for="minor">MINOR</label>
+        </div>
+        <div class="section-title">Details</div>
+        <div class="line"></div>
+        <div class="input-group">
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" rows="4"></textarea>
+        </div>
+        <div class="input-group">
+            <label for="guidelines">Guidelines:</label>
+            <textarea id="guidelines" name="guidelines" rows="4"></textarea>
+        </div>
+        <div class="button-group">
+            <a href={% url 'ModifyViolation'%}>
+                <button type="submit">CONFIRM</button>
+                </a>
+            <a href={% url 'ModifyViolation'%}>
+                <button>CANCEL</button>
+                </a>
+        </div>
+    </div>
+</body>
+</html>

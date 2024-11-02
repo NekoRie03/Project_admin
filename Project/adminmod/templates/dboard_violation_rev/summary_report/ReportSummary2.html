@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Report Summary</title>
+    <style>
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>REPORT SUMMARY</h1>
+        <div class="info">
+            <p><span>Student ID:</span> ID-XX-XXXX</p>
+            <p><span>Student Name:</span> Juan Dela Cruz</p>
+            <p><span>Course/Year/Section:</span> X-X-X</p>
+            <hr>
+            <p><span>Date:</span> X-X-X</p>
+            <p><span>Time:</span> X-X-X</p>
+            <p><span>Violation Type:</span> X-X-X</p>
+            <hr>
+            <p><span>Employee ID Number:</span> ID-XX-XXXX</p>
+            <p><span>Employee Name:</span> X-X-X</p>
+            <p><span>Position:</span> X-X-X</p>
+        </div>
+        <div class="buttons">
+          <a href="{% url 'ViolationReportsWarning' %}"> <button>BACK</button> </a>
+            <button class="save">SAVE AS PDF</button>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <div class="EnterCode">
+            <h2>Enter Verification Code</h2>
+            <form>
+                <label for="code">Verification Code:</label><br>
+                <input type="text" id="code" name="code" maxlength="6"><br>
+            </form>
+            <a href="{% url 'reset' %}">
+                <button type="button">Verify</button>
+            </a>
+            <p>Didn't receive the code? <a href="{% url 'code' %}">Resend</a></p>
+        </div>
+    </body>
+</html>

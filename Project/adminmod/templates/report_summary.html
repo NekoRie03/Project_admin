@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Report Summary</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/report_summary.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Report Summary</h1>
+        
+        <p><strong>Student ID:</strong> {{ student_id }}</p>
+        <p><strong>Student Name:</strong> {{ student_name }}</p>
+        <p><strong>Incident Date:</strong> {{ incident_date }}</p>
+        <p><strong>Violation Type:</strong> {{ violation_type }}</p>
+
+        <form method="POST" action="{% url 'report_summary' %}">
+            {% csrf_token %}
+            <input type="hidden" name="db_student_id" value="{{ db_student_id }}">
+            <input type="hidden" name="incident_date" value="{{ incident_date }}">
+            <input type="hidden" name="db_violation_type_id" value="{{ db_violation_type_id }}">
+            
+            <button type="submit" name="confirm_submission">Confirm Submission</button>
+            <button type="submit" name="cancel_submission">Cancel</button>
+        </form>
+    </div>
+</body>
+</html>

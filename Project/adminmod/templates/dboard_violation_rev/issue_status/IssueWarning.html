@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<head>
+    <title>Issue Warning</title>
+</head>
+<body>
+    <div class="container">
+        <h1>ISSUE WARNING</h1>
+        <label>Message:</label>
+        <hr>
+        <label>Conditions:</label>
+        <textarea rows="3"></textarea>
+        <label>Consequences for non-compliance</label>
+        <textarea rows="3"></textarea>
+        <label>Set Deadline:</label>
+        <hr>
+        <div class="date-container">
+            <div>
+                <label>Start Date:</label>
+                <input type="date" >
+            </div>
+            <div>
+                <label>End Date:</label>
+                <input type="date" >
+            </div>
+        </div>
+        <div class="buttons">
+            <button class="confirm">CONFIRM</button>
+            <a href={% url 'ViolationReportsActive'%}><button class="cancel">CANCEL</button></a> 
+        </div>
+    </div>
+</body>
+</html>

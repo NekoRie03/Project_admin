@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html></html>
+ <head>
+    <link rel="#" href="#">
+ </head>
+ <body>
+   {% load static %}
+  <div class="container">
+   <div class="header">
+    <a href = {% url 'studentstatus'%}>
+      <img src="{% static 'adminmod/images/arrow-left.png' %}" alt="Profile Picture Placeholder" height="30" width="30"/>
+    </a>
+    <h1>
+     Important Notes
+    </h1>
+   </div>
+   <div class="content">
+    <p>
+     • If a student accumulates three or more offenses, they will be subject to termination of F-1 status and deportation.
+    </p>
+    <p>
+     • Students who violate academic integrity may be subject to additional sanctions, such as failure of a course or suspension from the university.
+    </p>
+    <p>
+     • Students who violate FERPA regulations may be subject to additional sanctions, such as mandatory training on FERPA regulations.
+    </p>
+   </div>
+  </div>
+ </body>
+</html>

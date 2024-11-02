@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>
+         Student Records
+        </title>
+        <link rel="stylesheet" href="Addcourse.css">
+    </head>
+    <body>
+        {% load static %}
+        <div class="container">
+         <div class="header">
+            <a href="{% url 'studrec' %}">
+                <img alt="Placeholder image" height="30" src="{% static 'adminmod/images/arrow-left.png' %}" width="30"/>
+            </a>
+          <h1>
+           Student Records
+          </h1>
+         </div>
+         <div class="line">
+         </div>
+         <div class="sub-header">
+          ADD COURSE
+         </div>
+         <div class="line">
+         </div>
+         <div class="form-container">
+          <div class="form-group">
+           <label for="course">
+            COURSE
+           </label>
+           <input id="course" name="course" type="text"/>
+          </div>
+          <div class="form-group">
+           <label for="year">
+            YEAR
+           </label>
+           <input id="year" name="year" type="text"/>
+          </div>
+          <div class="form-group">
+           <label for="program">
+            PROGRAM
+           </label>
+           <input id="program" name="program" type="text"/>
+          </div>
+         </div>
+         <div class="btn-container">
+          <button class="btn">
+           ADD
+          </button>
+         </div>
+        </div>
+       </body>
+</html>

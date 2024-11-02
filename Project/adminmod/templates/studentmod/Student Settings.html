@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+ <head>
+<link rel="#" href="#">
+ </head>
+ <body>
+    <body>
+        {% load static %}
+    <div class="container">
+     <div class="header">
+      <img src="{% static 'adminmod/images/profile.png' %}" alt="Profile Picture Placeholder" height="100" width="100"/>
+    <div class="profile-info">
+     <h1>
+      Juan Dela Cruz
+     </h1>
+     <p>
+      Year &amp; Section:
+     </p>
+     <p>
+      Course:
+     </p>
+     <p>
+      Total Violations:
+     </p>
+    </div>
+   </div>
+   <div class="tabs">
+    <div class="tab">
+    <a href="{% url 'studentstatus' %}">
+      <img src="{% static 'adminmod/images/paper.png' %}" alt="Profile  Picture Placeholder" height="30" width="30"/>
+     <span>
+      STATUS
+     </span>
+    </a>
+    </div>
+    <a href="{% url 'studentsettings' %}"><div class="tab">
+      <img src="{% static 'adminmod/images/lock.png' %}" alt="Profile  Picture Placeholder" height="30" width="30"/>
+     <span>
+      PASSWORD
+     </span>
+    </div>
+    </a>
+   </div>
+   <div class="form-group">
+    <label for="current-password">
+     Current Password:
+    </label>
+    <input id="current-password" type="password"/>
+   </div>
+   <div class="form-group">
+    <label for="new-password">
+     New password:
+    </label>
+    <input id="new-password" type="password"/>
+   </div>
+   <div class="form-group">
+    <label for="confirm-password">
+     Confirm new password:
+    </label>
+    <input id="confirm-password" type="password"/>
+   </div>
+   <a href="#"><button type="button">DONE</button>
+   </a>
+
+  </div>
+ </body>
+</html>

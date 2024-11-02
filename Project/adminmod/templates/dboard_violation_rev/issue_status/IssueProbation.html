@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<head>
+</head>
+<body>
+    <div class="container">
+        <h1>ISSUE PROBATION</h1>
+        <div class="section-title">Probation Period</div>
+        <div class="input-group">
+            <label for="start-date">Start Date:</label>
+            <input type="date" id="start-date">
+        </div>
+        <div class="input-group">
+            <label for="end-date">End Date:</label>
+            <input type="date" id="end-date">
+        </div>
+        <div class="section-title">Conditions & Requirements</div>
+        <div class="input-group">
+            <label for="probation-type">Probation Type:</label>
+            <select id="probation-type">
+                <option>Option 1</option>
+                <option>Option 2</option>
+                <option>Option 3</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="consequences">Consequences for non-compliance & Conditions for Reinstatement:</label>
+            <textarea id="consequences" rows="4"></textarea>
+        </div>
+        <div class="buttons">
+            <button class="confirm">CONFIRM</button>
+            <a href={% url 'ViolationReportsActive'%}><button class="cancel">CANCEL</button></a> 
+        </div>
+    </div>
+</body>
+</html>
