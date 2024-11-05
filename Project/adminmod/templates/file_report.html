@@ -3,14 +3,22 @@
 <html>
 <head>
     <title>File Report</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'adminmod/css/file_report.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'adminmod/css/newcss/file_report.css' %}">
 </head>
 <body>
+    <!-- Sticky Navbar -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="{% url 'login' %}">Sign Out</a></li>
+            <li><a href="{% url 'changepass' %}">Password</a></li>
+        </ul>
+    </nav>
+
+    <!-- Report Container -->
     <div class="report-container">
         <img src="{% static 'adminmod/images/logo.png' %}" alt="Profile Picture Placeholder" class="logo"/>
         <h1>File Report</h1>
         
-
         <!-- Search Form -->
         <form method="POST">
             {% csrf_token %}
@@ -22,7 +30,6 @@
                 </div>
             </div>
         </form>
-
 
         <!-- Display Search Results -->
         {% if search_result %}

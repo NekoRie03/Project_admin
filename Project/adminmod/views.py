@@ -403,3 +403,6 @@ def registration_success(request):
 
 def report_success(request):
     return render(request, 'report_success.html')
+
+def changepass(request):
+    return render(request,'guard-instructormod/Changepass.html')

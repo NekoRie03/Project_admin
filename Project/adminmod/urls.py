@@ -89,4 +89,5 @@ urlpatterns = [
     path('manage_dropdown/', views.manage_dropdown, name='manage_dropdown'),
     path('registration_success/', views.registration_success, name='registration_success'),
     path('file-report/', views.file_report, name='file_report'),
+    path('changepass/', views.changepass, name='changepass'),
 ]
