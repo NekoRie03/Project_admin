@@ -9,7 +9,11 @@
     <h2>Manage Violations</h2>
     <form method="POST">
         {% csrf_token %}
+        
+    
         {{ form.as_p }}
+
+        
         <button type="submit">Add Violation</button>
     </form>
 

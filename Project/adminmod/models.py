@@ -53,16 +53,25 @@ class ViolationType(models.Model):
     violation_type = models.CharField(max_length=10, choices=VIOLATION_TYPE_CHOICES)
     description = models.TextField()
     guidelines = models.TextField()
+    sanction = models.CharField(max_length=255, null=True, blank=True)  
     sanction_period_value = models.IntegerField()
     sanction_period_type = models.CharField(max_length=10, choices=[('Day', 'Day'), ('Week', 'Week'), ('Month', 'Month')])
 
     def __str__(self):
         return self.name
 
+
 class Report(models.Model):
+    STATUS_TYPE_CHOICES = [
+        ('On Hold', 'On Hold'),
+        ('Active', 'Active'),
+        ('Resolved', 'Resolved'),
+        ('Deny', 'Deny'),
+    ]
     student = models.ForeignKey(Signup, on_delete=models.CASCADE)
     incident_date = models.DateField()
     violation_type = models.ForeignKey(ViolationType, on_delete=models.CASCADE)
+    status = models.CharField(max_length=10, choices=STATUS_TYPE_CHOICES, default='On Hold')
 
     def __str__(self):
         return f"Report for {self.student.first_name} {self.student.last_name}"

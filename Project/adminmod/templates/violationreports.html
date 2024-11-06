@@ -1,0 +1,94 @@
+{% extends "main.html" %}
+
+{% block content %}
+{% load static %}
+<head>
+<link rel="stylesheet" type ='text/css'  href={% static 'adminmod/css/violationreports.css' %}>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+         <i class="fas fa-home"></i>
+         <h1>
+            Violation Reports
+         </h1>
+         <form method="get" action="{% url 'violationreports' %}">
+            <div class="filters-container">
+                <div class="filter">
+                    <label for="filter_status">Status:</label>
+                    <select id="filter_status" name="filter_status">
+                        <option value="">All</option>
+                        <option value="Active" {% if request.GET.filter_status == "Active" %}selected{% endif %}>Active</option>
+                        <option value="ON HOLD" {% if request.GET.filter_status == "ON HOLD" %}selected{% endif %}>ON HOLD</option>
+                        <option value="Resolved" {% if request.GET.filter_status == "Resolved" %}selected{% endif %}>Resolved</option>
+                    </select>
+                </div>
+                <div class="filter">
+                    <label for="filter_program">Program:</label>
+                    <select id="filter_program" name="filter_program">
+                        <option value="">All</option>
+                        {% for program in programs %}
+                            <option value="{{ program.program1 }}" {% if request.GET.filter_program == program.program1 %}selected{% endif %}>{{ program.program1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter">
+                    <label for="filter_date">Month & Year:</label>
+                    <input type="month" id="filter_date" name="filter_date" value="{{ request.GET.filter_date }}">
+                </div>
+                <div class="filter">
+                    <label for="filter_violation">Violation:</label>
+                    <select id="filter_violation" name="filter_violation">
+                        <option value="">None</option>
+                        {% for violation in violations %}
+                            <option value="{{ violation.name }}" {% if request.GET.filter_violation == violation.name %}selected{% endif %}>{{ violation.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter">
+                    <label for="filter_sanction">Sanction:</label>
+                    <select id="filter_sanction" name="filter_sanction">
+                        <option value="">All</option>
+                        {% for sanction in sanctions %}
+                            <option value="{{ sanction }}" {% if request.GET.filter_sanction == sanction %}selected{% endif %}>{{ sanction }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit">Apply</button>
+            </div>
+        </form>
+        
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>DATE</th>
+                    <th>Student ID</th>
+                    <th>Violation</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td scope="row">{{ report.incident_date }}</td>
+                    <td>{{ report.student.idnumber }}</td>
+                    <td>{{ report.violation_type.name }}</td>
+                    <td>
+                        <form method="post" action="{% url 'update_status' report.id %}">
+                            {% csrf_token %}
+                            <input type="button" value="VIEW" />
+                            <select name="status" onchange="this.form.submit()">
+                                <option value="On Hold" {% if report.status == "On Hold" %}selected{% endif %}>On Hold</option>
+                                <option value="Active" {% if report.status == "Active" %}selected{% endif %}>Active</option>
+                                <option value="Resolved" {% if report.status == "Resolved" %}selected{% endif %}>Resolved</option>
+                                <option value="Deny" {% if report.status == "Deny" %}selected{% endif %}>Deny</option>
+                                <option value="MODIFY">MODIFY</option>
+                                <option value="REMOVE">REMOVE</option>
+                            </select>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+   {% endblock content%}

@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.shortcuts import HttpResponse
+from django.shortcuts import HttpResponse, get_object_or_404, redirect
 from django.http import JsonResponse
 from .forms import SignupNow, ReportForm, ViolationTypeForm, UserForm
 from .models import DropdownOption, Signup, Course, Section, Report, ViolationType, User
@@ -406,3 +406,67 @@ def report_success(request):
 
 def changepass(request):
     return render(request,'guard-instructormod/Changepass.html')
+
+
+def violationreports(request):
+    # Fetch all dropdown options (programs)
+    programs = DropdownOption.objects.all()
+    
+    # Fetch all violation types
+    violations = ViolationType.objects.all()
+    
+    # Fetch all distinct sanctions (from ViolationType)
+    sanctions = ViolationType.objects.values_list('sanction', flat=True).distinct()
+
+    # Fetch the reports (apply filters based on the selected criteria if any)
+    reports = Report.objects.select_related('student', 'violation_type')
+
+    # Apply the filters based on request parameters
+    status_filter = request.GET.get('filter_status')
+    program_filter = request.GET.get('filter_program')
+    month_filter = request.GET.get('filter_date')
+    violation_filter = request.GET.get('filter_violation')
+    sanction_filter = request.GET.get('filter_sanction')
+
+    if status_filter:
+        reports = reports.filter(status=status_filter)
+
+    if program_filter:
+        reports = reports.filter(student__program1=program_filter)
+
+    if month_filter:
+        reports = reports.filter(incident_date__month=month_filter[:2], incident_date__year=month_filter[3:])
+
+    if violation_filter:
+        reports = reports.filter(violation_type__name=violation_filter)
+
+    if sanction_filter:
+        reports = reports.filter(violation_type__sanction=sanction_filter)
+
+    # Pass the necessary data to the template
+    context = {
+        'reports': reports,
+        'programs': programs,
+        'violations': violations,
+        'sanctions': sanctions,
+        'request': request,  # Pass the request object to the template
+    }
+
+    return render(request, 'violationreports.html', context)
+
+def update_status(request, report_id):
+    if request.method == 'POST':
+        # Get the report object
+        report = get_object_or_404(Report, id=report_id)
+        
+        # Get the new status from the form
+        new_status = request.POST.get('status')
+        
+        # Update the report status
+        report.status = new_status
+        report.save()
+        
+        # Redirect back to the reports page
+        return redirect('violationreports')
+    
+    return HttpResponse("Invalid request", status=400)

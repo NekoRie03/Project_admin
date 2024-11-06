@@ -1,15 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Summary</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <style>
-
+        .info p {
+            margin: 0.5rem 0;
+        }
+        .info span {
+            font-weight: bold;
+        }
+        .buttons {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>REPORT SUMMARY</h1>
-        <div class="info">
+    <div class="container mt-5">
+        <h1 class="text-center">REPORT SUMMARY</h1>
+        <div class="info mt-4">
             <p><span>Student ID:</span> ID-XX-XXXX</p>
             <p><span>Student Name:</span> Juan Dela Cruz</p>
             <p><span>Course/Year/Section:</span> X-X-X</p>
@@ -22,10 +34,15 @@
             <p><span>Employee Name:</span> X-X-X</p>
             <p><span>Position:</span> X-X-X</p>
         </div>
-        <div class="buttons">
-          <a href="{% url 'ViolationReportsActive' %}"> <button>BACK</button> </a>
-            <button class="save">SAVE AS PDF</button>
+        <div class="buttons text-center">
+            <a href="{% url 'ViolationReportsActive' %}" class="btn btn-secondary">BACK</a>
+            <button class="btn btn-primary save">SAVE AS PDF</button>
         </div>
     </div>
+
+    <!-- Bootstrap JS and dependencies (optional) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

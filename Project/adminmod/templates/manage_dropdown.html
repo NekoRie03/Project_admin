@@ -1,87 +1,108 @@
-{% load static %}
-<link rel="stylesheet" type="text/css" href="{% static 'adminmod/css/newcss/manage_dropdown.css' %}">
+{% extends "main.html" %}
+{% block content %}
 
-<h2>Manage Dropdown Options</h2>
 
-<!-- Form to Add New Program -->
-<form method="POST">
-    {% csrf_token %}
-    <label for="new_program">Add New Program:</label>
-    <input type="text" id="new_program" name="new_program" placeholder="Enter new program" required>
-    <button type="submit" name="add_program">Add Program</button>
-</form>
 
-<!-- Form to Add New Course -->
-<form method="POST">
-    {% csrf_token %}
-    <label for="new_course">Add New Course:</label>
-    <select name="program_id" required>
-        <option value="">Select Program</option>
-        {% for program in program_options %}
-            <option value="{{ program.id }}">{{ program.program1 }}</option>
-        {% endfor %}
-    </select>
-    <input type="text" id="new_course" name="new_course" placeholder="Enter new course" required>
-    <button type="submit" name="add_course">Add Course</button>
-</form>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Manage Dropdown Options</h2>
 
-<!-- Form to Add New Section -->
-<form method="POST">
-    {% csrf_token %}
-    <label for="new_section">Add New Section:</label>
-    <select name="course_id" required>
-        <option value="">Select Course</option>
-        {% for course in course_options %}
-            <option value="{{ course.id }}">{{ course.course_name }}</option>
-        {% endfor %}
-    </select>
-    <input type="text" id="new_section" name="new_section" placeholder="Enter new section" required>
-    <button type="submit" name="add_section">Add Section</button>
-</form>
+    <!-- Form to Add New Program -->
+    <form method="POST" class="mb-4 p-3 border rounded">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="new_program" class="font-weight-bold">Add New Program:</label>
+            <input type="text" id="new_program" name="new_program" class="form-control" placeholder="Enter new program" required>
+        </div>
+        <button type="submit" name="add_program" class="btn btn-primary mt-2">Add Program</button>
+    </form>
 
-<h3>Current Options</h3>
+    <!-- Form to Add New Course -->
+    <form method="POST" class="mb-4 p-3 border rounded">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="new_course" class="font-weight-bold">Add New Course:</label>
+            <select name="program_id" class="form-control mb-2" required>
+                <option value="">Select Program</option>
+                {% for program in program_options %}
+                    <option value="{{ program.id }}">{{ program.program1 }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" id="new_course" name="new_course" class="form-control" placeholder="Enter new course" required>
+        </div>
+        <button type="submit" name="add_course" class="btn btn-primary mt-2">Add Course</button>
+    </form>
 
-<!-- Display current programs -->
-<h4>Programs</h4>
-<ul>
-    {% for program in program_options %}
-        <li>
-            {{ program.program1 }}
-            <form method="POST" onsubmit="return confirm('Are you sure you want to delete this program?');">
-                {% csrf_token %}
-                <input type="hidden" name="delete_program" value="{{ program.id }}">
-                <button type="submit">Delete</button>
-            </form>
-        </li>
-    {% endfor %}
-</ul>
+    <!-- Form to Add New Section -->
+    <form method="POST" class="mb-4 p-3 border rounded">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="new_section" class="font-weight-bold">Add New Section:</label>
+            <select name="course_id" class="form-control mb-2" required>
+                <option value="">Select Course</option>
+                {% for course in course_options %}
+                    <option value="{{ course.id }}">{{ course.course_name }}</option>
+                {% endfor %}
+            </select>
+            <input type="text" id="new_section" name="new_section" class="form-control" placeholder="Enter new section" required>
+        </div>
+        <button type="submit" name="add_section" class="btn btn-primary mt-2">Add Section</button>
+    </form>
 
-<!-- Display current courses -->
-<h4>Courses</h4>
-<ul>
-    {% for course in course_options %}
-        <li>
-            {{ course.course_name }}
-            <form method="POST" onsubmit="return confirm('Are you sure you want to delete this course?');">
-                {% csrf_token %}
-                <input type="hidden" name="delete_course" value="{{ course.id }}">
-                <button type="submit">Delete</button>
-            </form>
-        </li>
-    {% endfor %}
-</ul>
+    <h3>Current Options</h3>
 
-<!-- Display current sections -->
-<h4>Sections</h4>
-<ul>
-    {% for section in section_options %}
-        <li>
-            {{ section.section_name }}
-            <form method="POST" onsubmit="return confirm('Are you sure you want to delete this section?');">
-                {% csrf_token %}
-                <input type="hidden" name="delete_section" value="{{ section.id }}">
-                <button type="submit">Delete</button>
-            </form>
-        </li>
-    {% endfor %}
-</ul>
+    <!-- Display lists in a table-like structure -->
+    <div class="row">
+        <!-- Programs Column -->
+        <div class="col-md-4">
+            <h4 class="mt-4">Programs</h4>
+            <ul class="list-group mb-4">
+                {% for program in program_options %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ program.program1 }}
+                        <form method="POST" class="m-0" onsubmit="return confirm('Are you sure you want to delete this program?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete_program" value="{{ program.id }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Courses Column -->
+        <div class="col-md-4">
+            <h4 class="mt-4">Courses</h4>
+            <ul class="list-group mb-4">
+                {% for course in course_options %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ course.course_name }}
+                        <form method="POST" class="m-0" onsubmit="return confirm('Are you sure you want to delete this course?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete_course" value="{{ course.id }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Sections Column -->
+        <div class="col-md-4">
+            <h4 class="mt-4">Sections</h4>
+            <ul class="list-group">
+                {% for section in section_options %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ section.section_name }}
+                        <form method="POST" class="m-0" onsubmit="return confirm('Are you sure you want to delete this section?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete_section" value="{{ section.id }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

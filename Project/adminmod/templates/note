@@ -1,0 +1,240 @@
+I can't display dropdown of existing STATUS PROGRAM MONTH & YEAR VIOLATION SANCTION filter, can you check what's wrong?
+
+violationreports.html:
+{% extends "main.html" %}
+
+{% block content %}
+{% load static %}
+<head>
+<link rel="stylesheet" type ='text/css'  href={% static 'adminmod/css/violationreports.css' %}>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+         <i class="fas fa-home"></i>
+         <h1>
+            Violation Reports
+         </h1>
+         <form method="get" action="{% url 'violationreports' %}">
+            <div class="filters-container">
+                <div class="filter">
+                    <label for="filter_status">Status:</label>
+                    <select id="filter_status" name="filter_status">
+                        <option value="">All</option>
+                        <option value="Active" {% if request.GET.filter_status == "Active" %}selected{% endif %}>Active</option>
+                        <option value="ON HOLD" {% if request.GET.filter_status == "ON HOLD" %}selected{% endif %}>ON HOLD</option>
+                        <option value="Resolved" {% if request.GET.filter_status == "Resolved" %}selected{% endif %}>Resolved</option>
+                    </select>
+                </div>
+                <div class="filter">
+                    <label for="filter_program">Program:</label>
+                    <select id="filter_program" name="filter_program">
+                        <option value="">All</option>
+                        {% for program in programs %}
+                            <option value="{{ program.program1 }}" {% if request.GET.filter_program == program.program1 %}selected{% endif %}>{{ program.program1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter">
+                    <label for="filter_date">Month & Year:</label>
+                    <input type="month" id="filter_date" name="filter_date" value="{{ request.GET.filter_date }}">
+                </div>
+                <div class="filter">
+                    <label for="filter_violation">Violation:</label>
+                    <select id="filter_violation" name="filter_violation">
+                        <option value="">None</option>
+                        {% for violation in violations %}
+                            <option value="{{ violation.name }}" {% if request.GET.filter_violation == violation.name %}selected{% endif %}>{{ violation.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter">
+                    <label for="filter_sanction">Sanction:</label>
+                    <select id="filter_sanction" name="filter_sanction">
+                        <option value="">All</option>
+                        {% for sanction in sanctions %}
+                            <option value="{{ sanction }}" {% if request.GET.filter_sanction == sanction %}selected{% endif %}>{{ sanction }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit">Apply</button>
+            </div>
+        </form>
+        
+            
+     
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>DATE</th>
+                    <th>Student ID</th>
+                    <th>Violation</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td scope="row">{{ report.incident_date }}</td>
+                    <td>{{ report.student.idnumber }}</td>
+                    <td>{{ report.violation_type.name }}</td>
+                    <td>
+                        <form method="post" action="{% url 'update_status' report.id %}">
+                            {% csrf_token %}
+                            <input type="button" value="VIEW" />
+                            <select name="status" onchange="this.form.submit()">
+                                <option value="On Hold" {% if report.status == "On Hold" %}selected{% endif %}>On Hold</option>
+                                <option value="Active" {% if report.status == "Active" %}selected{% endif %}>Active</option>
+                                <option value="Resolved" {% if report.status == "Resolved" %}selected{% endif %}>Resolved</option>
+                                <option value="Deny" {% if report.status == "Deny" %}selected{% endif %}>Deny</option>
+                                <option value="MODIFY">MODIFY</option>
+                                <option value="REMOVE">REMOVE</option>
+                            </select>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+   {% endblock content%}
+
+models.py:
+from django.db import models
+from django.utils import timezone
+
+
+# Create your models here.
+
+class DropdownOption(models.Model):
+    program1 = models.CharField(max_length=255, default='Default Program')
+
+    def __str__(self):
+        return self.program1
+
+class Course(models.Model):
+    program = models.ForeignKey(DropdownOption, on_delete=models.CASCADE)
+    course_name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.course_name
+
+
+class Section(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    section_name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.section_name
+
+class Signup(models.Model):
+    first_name = models.CharField(max_length=50, verbose_name='First Name')
+    middle_initial = models.CharField(max_length=1, null=True, blank=True, verbose_name='Middle Initial')
+    last_name = models.CharField(max_length=50, verbose_name='Last Name')
+    idnumber = models.CharField(max_length=20, unique=True, verbose_name='ID Number')
+    email = models.EmailField(unique=True, verbose_name='Email')
+    password = models.CharField(max_length=8, verbose_name='Password')
+    confirmpass = models.CharField(max_length=8, verbose_name='Confirm Password')
+    program1 = models.ForeignKey(DropdownOption, on_delete=models.CASCADE, null=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
+    id_picture = models.FileField(upload_to='id_pictures/', verbose_name='ID Picture')
+    registration_cert = models.FileField(upload_to='registration_certs/', verbose_name='Certificate of Registration (COR)')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
+# Violation Models
+class ViolationType(models.Model):
+    VIOLATION_TYPE_CHOICES = [
+        ('Minor', 'Minor'),
+        ('Major', 'Major'),
+    ]
+    name = models.CharField(max_length=255)
+    violation_type = models.CharField(max_length=10, choices=VIOLATION_TYPE_CHOICES)
+    description = models.TextField()
+    guidelines = models.TextField()
+    sanction = models.CharField(max_length=255, null=True, blank=True)  
+    sanction_period_value = models.IntegerField()
+    sanction_period_type = models.CharField(max_length=10, choices=[('Day', 'Day'), ('Week', 'Week'), ('Month', 'Month')])
+
+    def __str__(self):
+        return self.name
+
+
+class Report(models.Model):
+    STATUS_TYPE_CHOICES = [
+        ('On Hold', 'On Hold'),
+        ('Active', 'Active'),
+        ('Resolved', 'Resolved'),
+        ('Deny', 'Deny'),
+    ]
+    student = models.ForeignKey(Signup, on_delete=models.CASCADE)
+    incident_date = models.DateField()
+    violation_type = models.ForeignKey(ViolationType, on_delete=models.CASCADE)
+    status = models.CharField(max_length=10, choices=STATUS_TYPE_CHOICES, default='On Hold')
+
+    def __str__(self):
+        return f"Report for {self.student.first_name} {self.student.last_name}"
+
+class User(models.Model):
+    USER_CHOICES = [
+        ('GUARD', 'GUARD'),
+        ('INSTRUCTOR', 'INSTRUCTOR'),
+        ('ADMIN', 'ADMIN')
+    ]
+    employee_id = models.CharField(max_length=20, unique=True)
+    first_name = models.CharField(max_length=50, default='', null=True)
+    middle_initial = models.CharField(max_length=1, blank=True, null=True, default='')
+    last_name = models.CharField(max_length=50, default='', null=True)
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=100)
+    position = models.CharField(max_length=10, choices=USER_CHOICES)
+    
+    def __str__(self):
+        return f"{self.first_name} {self.middle_initial or ''} {self.last_name}".strip()
+
+forms.py:
+from django import forms
+from .models import Signup, DropdownOption, Course, Section, Report, ViolationType,User
+from django.forms import ModelForm
+import random
+import string
+
+class SignupNow(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput())
+    confirmpass = forms.CharField(widget=forms.PasswordInput())
+
+    class Meta:
+        model = Signup
+        fields = ['first_name', 'middle_initial', 'last_name', 'idnumber', 'email', 'password', 'confirmpass', 'program1', 'course', 'section', 'id_picture', 'registration_cert']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get("password")
+        confirmpass = cleaned_data.get("confirmpass")
+
+        if password != confirmpass:
+            raise forms.ValidationError("Passwords do not match.")
+
+class ReportForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = ['student', 'incident_date', 'violation_type','status']
+
+class ViolationTypeForm(forms.ModelForm):
+    class Meta:
+        model = ViolationType
+        fields = ['name', 'violation_type', 'description', 'guidelines', 'sanction_period_value', 'sanction_period_type', 'sanction']
+
+
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['employee_id', 'first_name', 'middle_initial', 'last_name', 'position']
+
+    def clean_employee_id(self):
+        employee_id = self.cleaned_data['employee_id']
+        if User.objects.filter(employee_id=employee_id).exists():
+            raise forms.ValidationError("Employee ID already exists.")
+        return employee_id

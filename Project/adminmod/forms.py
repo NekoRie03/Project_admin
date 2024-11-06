@@ -23,12 +23,13 @@ class SignupNow(forms.ModelForm):
 class ReportForm(forms.ModelForm):
     class Meta:
         model = Report
-        fields = ['student', 'incident_date', 'violation_type']
+        fields = ['student', 'incident_date', 'violation_type','status']
 
 class ViolationTypeForm(forms.ModelForm):
     class Meta:
         model = ViolationType
-        fields = ['name', 'violation_type', 'description', 'guidelines', 'sanction_period_value', 'sanction_period_type']
+        fields = ['name', 'violation_type', 'description', 'guidelines', 'sanction_period_value', 'sanction_period_type', 'sanction']
+
 
 class UserForm(forms.ModelForm):
     class Meta:

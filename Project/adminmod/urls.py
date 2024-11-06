@@ -90,4 +90,7 @@ urlpatterns = [
     path('registration_success/', views.registration_success, name='registration_success'),
     path('file-report/', views.file_report, name='file_report'),
     path('changepass/', views.changepass, name='changepass'),
+    path('violationreports/', views.violationreports, name='violationreports'),
+    path('update_status/<int:report_id>/', views.update_status, name='update_status'),
+
 ]

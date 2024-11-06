@@ -1,43 +1,44 @@
 {% extends "main.html" %}
 {% block content %}
- <body>
-    <body>
-        {% load static %}
-    <div class="container">
-     <div class="header">
-      <img src="{% static 'adminmod/images/profile.png' %}" alt="Profile Picture Placeholder" height="100" width="100"/>
-    <div class="profile-info">
-     <h1>
-      Juan Dela Cruz
-     </h1>
-     <p>
-      Year &amp; Section:
-     </p>
-     <p>
-      Course:
-     </p>
-     <p>
-      Total Violations:
-     </p>
+{% load static %}
+
+
+<body class="bg-light">
+
+    {% include "navbar student.html" %}
+    
+
+    <div class="container my-5 pt-5">
+        <!-- Header Section -->
+        <header class="d-flex align-items-center mb-4">
+            <img src="{% static 'adminmod/images/profile.png' %}" alt="Profile Picture" class="rounded-circle me-3" style="height: 100px; width: 100px;">
+            <div>
+                <h1 class="h3">Juan Dela Cruz</h1>
+                <p class="mb-1">Year & Section:</p>
+                <p class="mb-1">Course:</p>
+                <p>Total Violations:</p>
+            </div>
+        </header>
+
+        <!-- Password Form -->
+        <div class="mb-4">
+            <div class="mb-3">
+                <label for="current-password" class="form-label">Current Password:</label>
+                <input id="current-password" type="password" class="form-control" placeholder="Enter current password">
+            </div>
+            <div class="mb-3">
+                <label for="new-password" class="form-label">New Password:</label>
+                <input id="new-password" type="password" class="form-control" placeholder="Enter new password">
+            </div>
+            <div class="mb-3">
+                <label for="confirm-password" class="form-label">Confirm New Password:</label>
+                <input id="confirm-password" type="password" class="form-control" placeholder="Confirm new password">
+            </div>
+            <a href="#">
+                <button type="button" class="btn btn-primary w-100">DONE</button>
+            </a>
+        </div>
     </div>
-   </div>
-   <div class="tabs">
-    <div class="tab">
-    <a href="{% url 'studentstatus' %}">
-      <img src="{% static 'adminmod/images/paper.png' %}" alt="Profile  Picture Placeholder" height="30" width="30"/>
-     <span>
-      STATUS
-     </span>
-    </a>
-    </div>
-    <a href="{% url 'studentsettings' %}"><div class="tab">
-      <img src="{% static 'adminmod/images/lock.png' %}" alt="Profile  Picture Placeholder" height="30" width="30"/>
-     <span>
-      PASSWORD
-     </span>
-    </div>
-    </a>
-   </div>
-{% include "password.html" %}
- </body>
- {% endblock content %}
+
+</body>
+{% endblock content %}

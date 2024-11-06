@@ -1,78 +1,112 @@
-{% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>File Report</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'adminmod/css/newcss/file_report.css' %}">
-</head>
-<body>
-    <!-- Sticky Navbar -->
-    <nav class="navbar">
-        <ul>
-            <li><a href="{% url 'login' %}">Sign Out</a></li>
-            <li><a href="{% url 'changepass' %}">Password</a></li>
-        </ul>
-    </nav>
+{% extends "main.html" %}
 
-    <!-- Report Container -->
-    <div class="report-container">
-        <img src="{% static 'adminmod/images/logo.png' %}" alt="Profile Picture Placeholder" class="logo"/>
-        <h1>File Report</h1>
-        
+{% load static %}
+{% block content %}
+<body>
+
+<!-- Fixed Navbar --> 
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <div class="container-fluid">
+        <!-- Brand -->
+        <a class="navbar-brand" href="#">File Report System</a>
+
+        <!-- Toggler for Mobile View -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar Links -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'changepass' %}">Password</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">Sign Out</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+    <!-- Main Content Container -->
+    <div class="container mt-5 pt-5">
+        <div class="text-center mb-4">
+            <img src="{% static 'adminmod/images/logo.png' %}" alt="Logo" class="img-fluid" style="width: 100px;">
+            <h1 class="mt-3">File Report</h1>
+        </div>
+
         <!-- Search Form -->
-        <form method="POST">
+        <form method="POST" class="mb-4">
             {% csrf_token %}
-            <div class="form-group search-bar-container">
-                <label>Search by Student ID:</label>
-                <div class="search-input-group">
-                    <input type="text" name="student_id_search" placeholder="Enter Student ID">
-                    <button type="submit">Search</button>
+            <div class="mb-3 row justify-content-center">
+                <label class="col-sm-2 col-form-label text-end">Search by Student ID:</label>
+                <div class="col-sm-6">
+                    <div class="input-group">
+                        <input type="text" name="student_id_search" class="form-control" placeholder="Enter Student ID">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
                 </div>
             </div>
         </form>
 
         <!-- Display Search Results -->
         {% if search_result %}
-            <div class="search-results">
-                <h2>Student Details</h2>
-                <p>ID Number: {{ search_result.idnumber }}</p>
-                <p>Name: {{ search_result.first_name }} {{ search_result.last_name }}</p>
+            <div class="alert alert-info">
+                <h5>Student Details</h5>
+                <p><strong>ID Number:</strong> {{ search_result.idnumber }}</p>
+                <p><strong>Name:</strong> {{ search_result.first_name }} {{ search_result.last_name }}</p>
             </div>
         {% elif search_result is not None %}
-            <p>No student found with that ID.</p>
+            <div class="alert alert-warning">No student found with that ID.</div>
         {% endif %}
-        
+
         <!-- Form to Submit a Report -->
-        <form method="POST">
+        <form method="POST" id="reportForm">
             {% csrf_token %}
-            <div class="form-group">
-                <label>Student ID:</label>
-                <select name="student" required>
+            <div class="mb-3">
+                <label class="form-label">Student ID:</label>
+                <select name="student" class="form-select" required>
                     {% for student in students %}
-                        <option value="{{ student.id }}" 
-                            {% if student.id == selected_student %}selected{% endif %}>
+                        <option value="{{ student.id }}" {% if student.id == selected_student %}selected{% endif %}>
                             {{ student.idnumber }} - {{ student.first_name }} {{ student.last_name }}
                         </option>
                     {% endfor %}
                 </select>
             </div>
 
-            <div class="form-group">
-                <label>Incident Date:</label>
-                <input type="date" name="incident_date" required>
+            <div class="mb-3">
+                <label class="form-label">Incident Date:</label>
+                <input type="date" name="incident_date" class="form-control" required>
             </div>
 
-            <div class="form-group">
-                <label>Violation Type:</label>
-                <select name="violation_type" required>
+            <div class="mb-3">
+                <label class="form-label">Violation Type:</label>
+                <select name="violation_type" class="form-select" required>
                     {% for violation in violation_types %}
                         <option value="{{ violation.id }}">{{ violation.name }}</option>
                     {% endfor %}
                 </select>
             </div>
 
-            <button type="submit">Submit Report</button>
+            <button type="submit" class="btn btn-success w-100">Submit Report</button>
         </form>
     </div>
+
+    {% include "report_success.html" %}
+    <!-- Bootstrap JavaScript Bundle (includes Popper) -->
+
+    <!-- Script to trigger modal on form submission -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if report_submitted %}
+                var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                successModal.show();
+            {% endif %}
+        });
+    </script>
+
+=
 </body>
-</html>
+{% endblock content %}
