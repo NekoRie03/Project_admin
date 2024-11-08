@@ -94,18 +94,7 @@
         </form>
     </div>
 
-    {% include "report_success.html" %}
-    <!-- Bootstrap JavaScript Bundle (includes Popper) -->
 
-    <!-- Script to trigger modal on form submission -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            {% if report_submitted %}
-                var successModal = new bootstrap.Modal(document.getElementById('successModal'));
-                successModal.show();
-            {% endif %}
-        });
-    </script>
 
 =
 </body>

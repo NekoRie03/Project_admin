@@ -1,0 +1,54 @@
+{% extends "main.html" %}
+{% block content %}
+
+<body>
+    <div class="container mt-5 p-4 border rounded shadow-sm bg-light">
+        <!-- Report Summary Title -->
+        <h1 class="mb-4 text-primary">Report Summary</h1>
+
+        <!-- Report Details -->
+        <div class="mb-3">
+            <p><strong>Student ID:</strong> {{ student_id }}</p>
+        </div>
+        <div class="mb-3">
+            <p><strong>Student Name:</strong> {{ student_name }}</p>
+        </div>
+        <div class="mb-3">
+            <p><strong>Incident Date:</strong> {{ incident_date }}</p>
+        </div>
+        <div class="mb-3">
+            <p><strong>Violation Type:</strong> {{ violation_type }}</p>
+        </div>
+
+        {% if sanction_period_value %}
+        <div class="mb-3">
+            <p><strong>Sanction Period Value:</strong> {{ sanction_period_value }}</p>
+        </div>
+        {% endif %}
+        {% if sanction_period_type %}
+        <div class="mb-3">
+            <p><strong>Sanction Period Type:</strong> {{ sanction_period_type }}</p>
+        </div>
+        {% endif %}
+        {% if sanction %}
+        <div class="mb-3">
+            <p><strong>Sanction:</strong> {{ sanction }}</p>
+        </div>
+        {% endif %}
+
+        {% if error_message %}
+        <div class="alert alert-danger mt-3">
+            {{ error_message }}
+        </div>
+        {% endif %}
+        
+        <!-- Back Button at the Bottom -->
+        <div class="mt-4 text-block">
+            <a href="javascript:history.back()" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+</body>
+
+{% endblock %}

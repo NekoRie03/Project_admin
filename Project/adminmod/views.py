@@ -4,68 +4,28 @@ from django.http import JsonResponse
 from .forms import SignupNow, ReportForm, ViolationTypeForm, UserForm
 from .models import DropdownOption, Signup, Course, Section, Report, ViolationType, User
 from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import logout
+from django.shortcuts import HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 import random
 import string
+from django.utils import timezone
+import datetime
 
 # Create your views here.
 
 # ------ Admin Dashboard ------
 def dashboard(request):
     return render(request,'Dashboard.html')
-# ------ Violation Review ------
-#dboard_violations
-def SummaryActive(request):
-    return render(request, 'dboard_violation_rev/ReportSummary1.html')
-def SummaryInactive(request):
-    return render(request, 'dboard_violation_rev/ReportSummary2.html')
-def ViolationReportsActive(request):
-    return render(request, 'dboard_violation_rev/ViolationReportsActive.html')
-def ViolationReportsWarning(request):
-    return render(request, 'dboard_violation_rev/ViolationReportsWarning.html')
-def ViolationReportsProbation(request):
-    return render(request, 'dboard_violation_rev/ViolationReportsProbation.html')
-def ViolationReportsSuspension(request):
-    return render(request, 'dboard_violation_rev/ViolationReportsSuspension.html')
-def ViolationReportsExpulsion(request):
-    return render(request, 'dboard_violation_rev/ViolationReportsExpulsion.html')
-def ViolationReportsInactive(request):
-    return render(request, 'dboard_violation_rev/ViolationReportsInactive.html')
 
-#issue_status dboard_violation_rev/issue_status/ 
-def IssueWarning(request):
-    return render(request, 'dboard_violation_rev/issue_status/IssueWarning.html')
-def IssueProbation(request):
-    return render(request, 'dboard_violation_rev/issue_status/IssueProbation.html')
-def IssueSuspension(request):
-    return render(request, 'dboard_violation_rev/issue_status/IssueSuspension.html')
-def IssueExpulsion(request):
-    return render(request, 'dboard_violation_rev/issue_status/IssueExpulsion.html')
 def DenyReport(request):
     return render(request, 'dboard_violation_rev/issue_status/DenyReport.html')
 
-#summary_report dboard_violation_rev/summary_report/
-def SummaryWarning(request):
-    return render(request, 'dboard_violation_rev/summary_report/SummaryWarning.html')
-def SummaryProbation(request):
-    return render(request, 'dboard_violation_rev/summary_report/SummaryProbation.html')
-def SummarySuspension(request):
-    return render(request, 'dboard_violation_rev/summary_report/SummarySuspension.html')
-def SummaryExpulsion(request):
-    return render(request, 'dboard_violation_rev/summary_report/SummaryExpulsion.html')
-def SummaryActive(request):
-    return render(request, 'dboard_violation_rev/summary_report/ReportSummary1.html')
-def SummaryInactive(request):
-    return render(request, 'dboard_violation_rev/summary_report/ReportSummary2.html')
-
-
 
 #modify_stat dboard_violation_rev/summary_issue/
 #modify_stat dboard_violation_rev/summary_issue/
-def ModifyExpulsion(request):
-    return render(request, 'dboard_violation_rev/modify_issue/ModifyExpulsion.html')
-def ModifySuspension(request):
-    return render(request, 'dboard_violation_rev/modify_issue/ModifySuspension.html')
 def ModifyProbation(request):
     return render(request, 'dboard_violation_rev/modify_issue/ModifyProbation.html')
 def ProbationProgress(request):
@@ -75,30 +35,10 @@ def ProbationProgress(request):
 #dboard_modify
 def ModifyViolation(request):
     return render(request, 'dboard_modify_violation/ModifyViolation.html')
-def Infopopup2(request):
-    return render(request, 'dboard_modify_violation/Infopopup2.html')
-def AddViolation(request):
-    return render(request, 'dboard_modify_violation/AddViolation.html')
-def EditViolation(request):
-    return render(request, 'dboard_modify_violation/EditViolation.html')
 
-# ------ Student Records ------
-def studrec(request):
-    return render(request, 'studrec/Student Records.html')
-def studrec2(request):
-    return render(request, 'studrec/Student Records 2.html')
-def studlist(request):
-    return render(request, 'studrec/Student List.html')
-def studlist2(request):
-    return render(request, 'studrec/Student List 2.html')
-def addcourse(request):
-    return render(request, 'studrec/addcourse.html')
-def editcourse(request):
-    return render(request, 'studrec/editcourse.html')
-def editlist(request):
-    return render(request, 'studrec/Editlist.html')
-def addlist(request):
-    return render(request, 'studrec/Addlist.html')    
+
+
+
 # ------ User Roles ------
 def userrole(request):
     return render(request, 'user_role/Account List.html') 
@@ -169,18 +109,6 @@ def useraccount(request):
 def login(request):
     return render(request, 'login/LOGIN.html')
 
-
-#def signup(request):
-    #if request.method == "POST":
-        #form = SignupNow(request.POST)
-        #form.save()
-        #return redirect("/")
-    #else:
-        #form = SignupNow()
-    #return render(request, 'login/Sign-up.html', {"form": form})
-
-#################################
-
 def signup(request):
     if request.method == "POST":
         form = SignupNow(request.POST, request.FILES)
@@ -193,7 +121,6 @@ def signup(request):
         form = SignupNow()
 
     return render(request,'login/Sign-up.html', {'form': form})
-
 
 def manage_dropdown(request):
     if request.method == 'POST':
@@ -289,6 +216,21 @@ def file_report(request):
                 return render(request, 'report_summary.html', context)
             except (Signup.DoesNotExist, ViolationType.DoesNotExist) as e:
                 return HttpResponse(f"Error: {str(e)}", status=400)
+            
+    if request.method == 'POST' and search_result:
+        # Assuming form submission logic here
+        # Gather necessary data
+        student_id = student.idnumber
+        student_name = f"{student.first_name} {student.last_name}"
+        incident_date = request.POST.get('incident_date')
+        violation_type = violation_type.name
+
+        # Redirect to report_summary2 with query parameters
+        return redirect('report_summary2', 
+                        student_id=student_id, 
+                        student_name=student_name, 
+                        incident_date=incident_date, 
+                        violation_type=violation_type)
 
     return render(request, 'file_report.html', {
         'violation_types': violation_types,
@@ -296,8 +238,6 @@ def file_report(request):
         'search_result': search_result,
         'selected_student': selected_student,
     })
-
-
 
 def report_summary(request):
     if request.method == 'POST':
@@ -317,6 +257,47 @@ def report_summary(request):
             return redirect('file_report')
     
     return redirect('file_report')
+
+def report_summary2(request):
+    # Get the violation type name from GET parameters
+    violation_type_name = request.GET.get('violation_type')  
+
+    # Try to fetch the ViolationType object
+    try:
+        violation_type = ViolationType.objects.get(name=violation_type_name)
+        context = {
+            'violation_type': violation_type,
+            'sanction_period_value': violation_type.sanction_period_value,
+            'sanction_period_type': violation_type.sanction_period_type,
+            'sanction': violation_type.sanction,
+        }
+    except ViolationType.DoesNotExist:
+        context = {
+            'error_message': 'Violation Type not found.'
+        }
+
+    # Get student data from GET parameters
+    student_id = request.GET.get('student_id')
+    student_name = None  # Initialize student_name
+
+    if student_id:
+        try:
+            # Fetch the student from the Signup model using student_id
+            student = Signup.objects.get(id=student_id)
+            student_name = f"{student.first_name} {student.last_name}"  # Combine first and last name
+        except Signup.DoesNotExist:
+            student_name = 'Unknown Student'  # Fallback if the student is not found
+
+    # Add student data to the context without overwriting the previous data
+    context.update({
+        'student_id': student_id,
+        'student_name': student_name,
+        'incident_date': request.GET.get('incident_date'),
+        'violation_type': violation_type_name,
+    })
+
+    # Render the template with the combined context
+    return render(request, 'report_summary2.html', context)
 
 def report_success(request):
     return render(request, 'report_success.html')
@@ -397,7 +378,6 @@ def notif(request):
 def reportsummary(request):
     return render(request, 'guard-instructormod/Guard Report Summary.html')
 
-
 def registration_success(request):
     return render(request, 'registration_success.html')
 
@@ -405,7 +385,7 @@ def report_success(request):
     return render(request, 'report_success.html')
 
 def changepass(request):
-    return render(request,'guard-instructormod/Changepass.html')
+    return render(request,'Changepass.html')
 
 
 def violationreports(request):
@@ -430,12 +410,16 @@ def violationreports(request):
 
     if status_filter:
         reports = reports.filter(status=status_filter)
-
+        
     if program_filter:
-        reports = reports.filter(student__program1=program_filter)
+        reports = reports.filter(student__program1_id=program_filter)
 
     if month_filter:
-        reports = reports.filter(incident_date__month=month_filter[:2], incident_date__year=month_filter[3:])
+        year, month = map(int, month_filter.split('-'))
+        start_date = datetime.date(year, month, 1)
+        end_date = datetime.date(year, month, 1) + datetime.timedelta(days=32)
+        end_date = end_date.replace(day=1) - datetime.timedelta(days=1)
+        reports = reports.filter(incident_date__range=(start_date, end_date))
 
     if violation_filter:
         reports = reports.filter(violation_type__name=violation_filter)

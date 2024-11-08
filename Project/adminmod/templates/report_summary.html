@@ -1,28 +1,41 @@
-{% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Report Summary</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/report_summary.css' %}">
-</head>
+{% extends "main.html" %}
+{% block content %}
+
 <body>
-    <div class="container">
-        <h1>Report Summary</h1>
+    <div class="container mt-5 p-4 rounded shadow-lg bg-light">
+        <h1 class="mb-4 text-primary">Report Summary</h1>
         
-        <p><strong>Student ID:</strong> {{ student_id }}</p>
-        <p><strong>Student Name:</strong> {{ student_name }}</p>
-        <p><strong>Incident Date:</strong> {{ incident_date }}</p>
-        <p><strong>Violation Type:</strong> {{ violation_type }}</p>
+        <div class="mb-3">
+            <p><strong>Student ID:</strong> {{ student_id }}</p>
+            <p><strong>Student Name:</strong> {{ student_name }}</p>
+            <p><strong>Incident Date:</strong> {{ incident_date }}</p>
+            <p><strong>Violation Type:</strong> {{ violation_type }}</p>
+        </div>
 
         <form method="POST" action="{% url 'report_summary' %}">
             {% csrf_token %}
             <input type="hidden" name="db_student_id" value="{{ db_student_id }}">
             <input type="hidden" name="incident_date" value="{{ incident_date }}">
             <input type="hidden" name="db_violation_type_id" value="{{ db_violation_type_id }}">
-            
-            <button type="submit" name="confirm_submission">Confirm Submission</button>
-            <button type="submit" name="cancel_submission">Cancel</button>
+
+            <div class="d-flex justify-content-end gap-3 mt-4">
+                <button type="submit" name="confirm_submission" class="btn btn-success px-4">Confirm</button>
+                <button type="submit" name="cancel_submission" class="btn btn-danger px-4">Cancel</button>
+            </div>
         </form>
     </div>
+
+
+    {% include "report_success.html" %}
+
+    <!-- JavaScript to trigger modal on form submission -->
+    <script>
+        document.querySelector('form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form from submitting for this example
+            var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+            successModal.show(); // Show the success modal
+        });
+    </script>
 </body>
-</html>
+
+{% endblock %}

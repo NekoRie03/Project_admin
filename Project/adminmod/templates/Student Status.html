@@ -10,16 +10,14 @@
     <header class="d-flex align-items-center mb-4">
         <img src="{% static 'adminmod/images/profile.png' %}" alt="Profile Picture" class="rounded-circle me-3" style="height: 100px; width: 100px;">
         <div>
-            <h1 class="h3">Juan Dela Cruz</h1>
-            <p class="mb-1">Year & Section:</p>
-            <p class="mb-1">Course:</p>
+            <h1 class="h3">{{ student_name }}</h1>  <!-- Display Student Name -->
+            <p class="mb-1">Year & Section: {{ year }} / {{ section }}</p>  <!-- Display Year and Section -->
+            <p class="mb-1">Course: {{ course }}</p>  <!-- Display Course -->
             <p>Total Violations:</p>
         </div>
     </header>
     
     {% include "navbar student.html" %}
-    
-  
     
     <!-- Most Recent Offense Section -->
     <section class="mb-4">
