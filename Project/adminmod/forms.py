@@ -1,8 +1,10 @@
+# Django core imports
 from django import forms
-from .models import Signup, DropdownOption, Course, Section, Report, ViolationType,User
 from django.forms import ModelForm
-import random
-import string
+# Local imports
+from .models import (Course,DropdownOption,Report,Section,Signup,Userrole,ViolationType,)
+# Python standard library imports
+import random, string
 
 class SignupNow(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())
@@ -31,14 +33,14 @@ class ViolationTypeForm(forms.ModelForm):
         fields = ['name', 'violation_type', 'description', 'guidelines', 'sanction_period_value', 'sanction_period_type', 'sanction']
 
 
-class UserForm(forms.ModelForm):
+class UserroleForm(forms.ModelForm):
     class Meta:
-        model = User
+        model = Userrole
         fields = ['employee_id', 'first_name', 'middle_initial', 'last_name', 'position']
 
     def clean_employee_id(self):
         employee_id = self.cleaned_data['employee_id']
-        if User.objects.filter(employee_id=employee_id).exists():
+        if Userrole.objects.filter(employee_id=employee_id).exists():
             raise forms.ValidationError("Employee ID already exists.")
         return employee_id
 

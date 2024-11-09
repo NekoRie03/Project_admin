@@ -3,68 +3,44 @@
 {% block content %}
 {% load static %}
 
-<body>
+<body class="pt-5 bg-light">
+    <div class="container mt-5">
+    
+        <!-- Profile Section -->
+        {% include "profile_student.html" %}
 
-  <div class="container my-5 pt-5">
-    <!-- Header Section -->
-    <header class="d-flex align-items-center mb-4">
-        <img src="{% static 'adminmod/images/profile.png' %}" alt="Profile Picture" class="rounded-circle me-3" style="height: 100px; width: 100px;">
-        <div>
-            <h1 class="h3">{{ student_name }}</h1>  <!-- Display Student Name -->
-            <p class="mb-1">Year & Section: {{ year }} / {{ section }}</p>  <!-- Display Year and Section -->
-            <p class="mb-1">Course: {{ course }}</p>  <!-- Display Course -->
-            <p>Total Violations:</p>
-        </div>
-    </header>
-    
-    {% include "navbar student.html" %}
-    
-    <!-- Most Recent Offense Section -->
-    <section class="mb-4">
-        <h2 class="h5">Most Recent Offense:</h2>
-        <div class="border rounded p-3 mt-2">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <p class="mb-0"><strong>Offense:</strong> mm/dd/yyyy</p>
-                <a href="{% url 'infopopup' %}" class="btn btn-link p-0 text-decoration-none">i</a>
+        {% include "navbar student.html" %}
+        
+        <!-- Most Recent Offense Section -->
+        <section class="mb-4">
+            <h2 class="h5">Most Recent Offense:</h2>
+            <div class="border rounded p-3 mt-2">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <p class="mb-0"><strong>Offense:</strong> {{ recent_offense.date }}</p>
+                    <a href="#" class="btn btn-link p-0 text-decoration-none">i</a>
+                </div>
+                <p class="mb-0"><strong>Sanction:</strong> {{ recent_offense.sanction }}</p>
             </div>
-            <p class="mb-0"><strong>Sanction:</strong> Sanction</p>
-        </div>
-    </section>
-    
-    <!-- Remaining Days to Serve Section -->
-    <section class="mb-4">
-        <h2 class="h5">Remaining Days to Serve</h2>
-        <div class="row gy-2 mt-2">
-            <div class="col-md-6"><strong>Days:</strong> XX</div>
-            <div class="col-md-6"><strong>Hours:</strong> XX</div>
-            <div class="col-md-6"><strong>Probation:</strong> Hours Required: Hours Served</div>
-            <div class="col-md-6"><strong>Deadline:</strong> mm/dd/yyyy</div>
-        </div>
-    </section>
+        </section>
+        
+        <!-- Remaining Days to Serve Section -->
+        <section class="mb-4">
+            <h2 class="h5">Remaining Days to Serve</h2>
+            <div class="row gy-2 mt-2">
+                <div class="col-md-6"><strong>Days:</strong> {{ remaining_days.days }}</div>
+                <div class="col-md-6"><strong>Hours:</strong> {{ remaining_days.hours }}</div>
+                <div class="col-md-6"><strong>Probation:</strong> {{ probation.hours_required }}: {{ probation.hours_served }}</div>
+                <div class="col-md-6"><strong>Deadline:</strong> {{ probation.deadline }}</div>
+            </div>
+        </section>
 
-    <!-- Submit Monitor Report Button -->
-    <div class="text-center mb-4">
-        <a href="{% url 'monitorreport' %}" class="btn btn-primary">SUBMIT MONITOR REPORT</a>
+        <!-- Submit Monitor Report Button -->
+        <div class="text-center mb-4">
+            <a href="{% url 'monitorreport' %}" class="btn btn-primary">SUBMIT MONITOR REPORT</a>
+        </div>
+        {% comment %} {% include "warning.html" %} {% endcomment %}
+        <!-- Offenses Table -->
+        {% include "offense table.html" %}
     </div>
-
-    <!-- Warning Section -->
-    <section class="mb-4">
-        <h2 class="h5">Warning:</h2>
-        <div class="d-flex align-items-center border rounded p-3 mt-2">
-            <a href="{% url 'infopopup3' %}" class="me-3">
-                <img src="{% static 'adminmod/images/envelope.png' %}" alt="Warning Icon" style="height: 30px; width: 30px;">
-            </a>
-            <div>
-                <strong>Warning</strong>
-                <p class="mb-0">You are currently committing your NTH violation. If you receive another violation, you will be subject to a sanction.</p>
-            </div>
-        </div>
-    </section>
-    
-    <!-- Offenses Table -->
-    {% include "offense table.html" %}
-</div>
-
-
 </body>
 {% endblock content %}

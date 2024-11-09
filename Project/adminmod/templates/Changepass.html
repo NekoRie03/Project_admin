@@ -3,12 +3,7 @@
 {% load static %}
 
 {% block content %}
-<nav class="navbar">
-    <ul>
-        <li><a href="{% url 'login' %}">Sign Out</a></li>
-        <li><a href="{% url 'file_report' %}">File Report</a></li>
-    </ul>
-</nav>
+{% include "navbarreport.html" %}
 {% include "password.html" %}
 
 {% endblock content %}

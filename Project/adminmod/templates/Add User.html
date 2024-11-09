@@ -1,69 +1,70 @@
+{% extends "main.html" %}
+
+{% block content %}
 {% load static %}
-<!DOCTYPE html>
-<head>
-    <title>Add User</title>
-    <link rel="stylesheet" type="text/css" href="{% static 'adminmod/css/add_user.css' %}">  <!-- Link to your CSS file -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-</head>
-<body>
-    {% load static %}
-    <div class="container">
-        <div class="header">
+
+<body class="bg-light">
+    
+    <div class="container my-5">
+        <div class="d-flex align-items-center mb-3">
             <a href="{% url 'userrole' %}">
-                <img src="{% static 'adminmod/images/arrow-left.png' %}" alt="Back" height="30" width="30"/>
+                <img src="{% static 'adminmod/images/arrow-left.png' %}" alt="Back" height="30" width="30" class="me-3"/>
             </a>
-            <h1>Add User</h1>
+            <h1 class="h3 mb-0">Add User</h1>
         </div>
         <hr/>
 
-        <form method="POST">
+        <form method="POST" class="bg-white p-4 rounded shadow-sm">
             {% csrf_token %}
-            <div class="form-group">
-                <label for="employee-id">Employee ID:</label>
+            <div class="mb-3">
+                <label for="employee-id" class="form-label">Employee ID:</label>
                 {{ form.employee_id }}
-                {{ form.employee_id.errors }}
+                <div class="text-danger">{{ form.employee_id.errors }}</div>
             </div>
 
-            <div class="form-group">
-                <label for="first-name">First Name:</label>
+            <div class="mb-3">
+                <label for="first-name" class="form-label">First Name:</label>
                 {{ form.first_name }}
-                {{ form.first_name.errors }}
+                <div class="text-danger">{{ form.first_name.errors }}</div>
             </div>
 
-            <div class="form-group">
-                <label for="middle-initial">Middle Initial:</label>
+            <div class="mb-3">
+                <label for="middle-initial" class="form-label">Middle Initial:</label>
                 {{ form.middle_initial }}
-                {{ form.middle_initial.errors }}
+                <div class="text-danger">{{ form.middle_initial.errors }}</div>
             </div>
 
-            <div class="form-group">
-                <label for="last-name">Last Name:</label>
+            <div class="mb-3">
+                <label for="last-name" class="form-label">Last Name:</label>
                 {{ form.last_name }}
-                {{ form.last_name.errors }}
+                <div class="text-danger">{{ form.last_name.errors }}</div>
             </div>
 
-            <div class="form-group position-group">
-                <label for="position">Position:</label>
+            <div class="mb-3">
+                <label for="position" class="form-label">Position:</label>
                 {{ form.position }}
-                {{ form.position.errors }}
+                <div class="text-danger">{{ form.position.errors }}</div>
             </div>
 
-            <div class="form-group">
-                <label for="generated-email">Generated Email:</label>
-                <input type="text" id="generated-email" value="{{ generated_email|default:'lastname.firstname@email.com' }}" readonly/>
+            <div class="mb-3">
+                <label for="generated-email" class="form-label">Generated Email:</label>
+                <input type="text" id="generated-email" value="{{ generated_email|default:'lastname.firstname@email.com' }}" class="form-control" readonly/>
             </div>
 
-            <div class="form-group">
-                <label for="generated-password">Generated Password:</label>
-                <div class="generated-password">
-                    <input type="text" id="generated-password" value="{{ generated_password|default:'randompassword' }}" readonly/>
-                    <button type="button" id="retry-password">Retry</button>
+            <div class="mb-3">
+                <label for="generated-password" class="form-label">Generated Password:</label>
+                <div class="input-group">
+                    <input type="text" id="generated-password" value="{{ generated_password|default:'randompassword' }}" class="form-control" readonly/>
+                    <button type="button" id="retry-password" class="btn btn-secondary">Retry</button>
                 </div>
             </div>
 
-            <button type="submit" class="done-button">DONE</button>
+            <button type="submit" class="btn btn-primary w-100">DONE</button>
         </form>
     </div>
+
+    <!-- Load jQuery (optional if you want to use fetch instead) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <script>
         // Show success alert if the success_message is present
@@ -71,18 +72,21 @@
             alert("{{ success_message }}");
         {% endif %}
         
-        // JavaScript to handle the retry button click and get a new password
-        $('#retry-password').click(function() {
-            $.ajax({
-                url: "{% url 'retry_password' %}",  // Update this URL with the correct path to your retry_password view
-                method: "GET",
-                success: function(data) {
-                    // Update the password field with the newly generated password
-                    $('#generated-password').val(data.generated_password);
+        // JavaScript to handle the retry button click and get a new password using fetch()
+        document.getElementById('retry-password').addEventListener('click', function() {
+            fetch('{% url "retry_password" %}', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
-            });
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Update the password field with the newly generated password
+                document.getElementById('generated-password').value = data.generated_password;
+            })
+            .catch(error => console.error('Error:', error));
         });
     </script>
 </body>
-</html>
-
+{% endblock content %}

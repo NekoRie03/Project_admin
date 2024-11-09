@@ -1,56 +1,40 @@
-from django.shortcuts import render, redirect
-from django.shortcuts import HttpResponse, get_object_or_404, redirect
-from django.http import JsonResponse
-from .forms import SignupNow, ReportForm, ViolationTypeForm, UserForm
-from .models import DropdownOption, Signup, Course, Section, Report, ViolationType, User
+# Django core imports
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import logout
-from django.shortcuts import HttpResponseRedirect
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-import random
-import string
+from django.contrib.auth.forms import AuthenticationForm
+from django.http import JsonResponse
+from django.shortcuts import (HttpResponse,HttpResponseRedirect,get_object_or_404,redirect,render,)
 from django.utils import timezone
-import datetime
-
-# Create your views here.
-
+from django.conf import settings
+# Local imports
+from .forms import (ReportForm,SignupNow,UserroleForm,ViolationTypeForm,)
+from .models import (Course,DropdownOption,Report,Section,Signup,User,ViolationType,Userrole)
+# Python standard library imports
+import datetime, random, string
 # ------ Admin Dashboard ------
 def dashboard(request):
     return render(request,'Dashboard.html')
 
 def DenyReport(request):
-    return render(request, 'dboard_violation_rev/issue_status/DenyReport.html')
-
-
-#modify_stat dboard_violation_rev/summary_issue/
-#modify_stat dboard_violation_rev/summary_issue/
-def ModifyProbation(request):
-    return render(request, 'dboard_violation_rev/modify_issue/ModifyProbation.html')
-def ProbationProgress(request):
-    return render(request, 'dboard_violation_rev/modify_issue/ProbationProgress.html')
-
-# ------ Modify Violation ------
-#dboard_modify
-def ModifyViolation(request):
-    return render(request, 'dboard_modify_violation/ModifyViolation.html')
-
-
-
+    return render(request, 'DenyReport.html')
 
 # ------ User Roles ------
 def userrole(request):
-    return render(request, 'user_role/Account List.html') 
+    return render(request, 'Account List.html') 
+
 def edituserrole(request):
-    return render(request, 'user_role/Edit User Role.html')
+    return render(request, 'Edit User Role.html')
 
 def generate_random_password():
     return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(10))
 
+def useraccount(request):
+    return render(request, 'UserAccount.html')
+
 def adduser(request):
     if request.method == 'POST':
-        form = UserForm(request.POST)
+        form = UserroleForm(request.POST)
         if form.is_valid():
             # Extract form data
             employee_id = form.cleaned_data['employee_id']
@@ -64,7 +48,7 @@ def adduser(request):
             password = generate_random_password()
             
             # Create the user in the database
-            user = User.objects.create(
+            userrole = Userrole.objects.create(
                 employee_id=employee_id,
                 first_name=first_name,
                 middle_initial=middle_initial,
@@ -74,23 +58,20 @@ def adduser(request):
                 position=position,
             )
 
-
             # Pass generated email and password to the template
-            return render(request, 'user_role/Add User.html', {
-                'form': UserForm(),  # Clear the form after submission
+            return render(request, 'Add User.html', {
+                'form': UserroleForm(),  # Clear the form after submission
                 'success_message': "User was successfully created."  # Add success message
             })
         else:
-            return render(request, 'user_role/Add User.html', {'form': form})
+            return render(request, 'Add User.html', {'form': form})
 
     # Generate a random password for the initial GET request
     password = generate_random_password()
-    return render(request, 'user_role/Add User.html', {
-        'form': UserForm(),
+    return render(request, 'Add User.html', {
+        'form': UserroleForm(),
         'generated_password': password
     })
-
-
 
 # View for generating a new password via AJAX
 def retry_password(request):
@@ -98,16 +79,81 @@ def retry_password(request):
         new_password = generate_random_password()
         return JsonResponse({'generated_password': new_password})
 
-
-
-
-
-
 def useraccount(request):
     return render(request, 'user_role/UserAccount.html')
 #------ Login ------
+
 def login(request):
     return render(request, 'login/LOGIN.html')
+
+def login_view(request):
+    if request.method == 'POST':
+        idnumber = request.POST.get('id-number')
+        password = request.POST.get('password')
+        
+        try:
+            user = Signup.objects.get(idnumber=idnumber)
+            if password == user.password:  # Compare with plain text password
+                # Log in user (store user ID and course ID in session, for example)
+                request.session['user_id'] = user.id
+                request.session['course_id'] = user.course.id  # Only store course ID, not the full object
+                return redirect('studentstatus')  # Redirect to landing page
+            else:
+                error = "Invalid ID number or password."
+        except Signup.DoesNotExist:
+            error = "User not found."
+        
+        return render(request, 'login/LOGIN.html', {'error': error})  # Render login page with error
+    
+    return render(request, 'login/LOGIN.html')  # Initial GET request
+
+def student_status(request):
+    # Check if the user is logged in and has an ID in the session
+    user_id = request.session.get('user_id')  # Adjust based on your login session setup
+
+    if user_id:
+        # Retrieve the logged-in user's data
+        user = Signup.objects.get(id=user_id)
+        context = {
+            'user': user,
+            'MEDIA_URL': settings.MEDIA_URL,
+        }
+        return render(request, 'Student Status.html', context)
+    else:
+        return redirect('login')  # Redirect to login page if not logged in
+    
+def update_password(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        messages.error(request, "Please log in first.")
+        return redirect('login')
+
+    try:
+        user = Signup.objects.get(id=user_id)
+    except Signup.DoesNotExist:
+        messages.error(request, "User not found.")
+        return redirect('login')
+
+    if request.method == 'POST':
+        current_password = request.POST.get('current_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        
+        if current_password != user.password:
+            messages.error(request, "Current password is incorrect.")
+            return render(request, 'Student Settings.html', {'user': user})
+        
+        if new_password != confirm_password:
+            messages.error(request, "New passwords do not match.")
+            return render(request, 'Student Settings.html', {'user': user})
+        
+        user.password = new_password
+        user.save()
+        messages.success(request, "Password updated successfully. Please log in again.")
+        request.session.flush()
+        return redirect('login')
+
+    return render(request, 'Student Settings.html', {'user': user})
 
 def signup(request):
     if request.method == "POST":
@@ -121,6 +167,12 @@ def signup(request):
         form = SignupNow()
 
     return render(request,'login/Sign-up.html', {'form': form})
+
+def studentstatus(request):
+    return render(request, 'Student Status.html')
+
+def studentsettings(request):
+    return render(request, 'Student Settings.html')
 
 def manage_dropdown(request):
     if request.method == 'POST':
@@ -177,7 +229,6 @@ def manage_dropdown(request):
         'course_options': course_options,
         'section_options': section_options,
     })
-
 
 def file_report(request):
     violation_types = ViolationType.objects.all()
@@ -328,8 +379,6 @@ def edit_violation(request, violation_id):
 
     return render(request, 'edit_violation.html', {'form': form, 'violation': violation})
 
-
-
 def reset(request):
     return render(request, 'login/Reset Password.html')
 
@@ -346,38 +395,18 @@ def code(request):
     return render(request, 'login/Enter Code.html')
 #------ studentmod ------
 def infopop(request):
-    return render(request, 'studentmod/infopopup.html')
+    return render(request, 'infopopup.html')
 
 def monitorrep(request):
-    return render(request, 'studentmod/MonitorReport.html')
+    return render(request, 'MonitorReport.html')
 
 def reportsumstud(request):
     return render(request, 'studentmod/ReportSummaryStudent.html')
 
-def studset(request):
-    return render(request, 'studentmod/Student Settings.html')
-
-def studstat(request):
-    return render(request, 'studentmod/Student Status.html')
 def infopopup3(request):
     return render(request, 'studentmod/infopopup3.html')
 
 #------- guard and instructor module ------
-def  addstudent(request):
-    return render(request, 'guard-instructormod/AddStud.html')
-
-def guardsearch(request):
-    return render(request, 'guard-instructormod/Guard Search.html')
-
-def guardsearch2(request):
-    return render(request, 'guard-instructormod/Guard Search 2.html')
-
-def notif(request):
-    return render(request, 'guard-instructormod/Guard Notification.html')
-
-def reportsummary(request):
-    return render(request, 'guard-instructormod/Guard Report Summary.html')
-
 def registration_success(request):
     return render(request, 'registration_success.html')
 
@@ -386,7 +415,6 @@ def report_success(request):
 
 def changepass(request):
     return render(request,'Changepass.html')
-
 
 def violationreports(request):
     # Fetch all dropdown options (programs)
@@ -454,3 +482,6 @@ def update_status(request, report_id):
         return redirect('violationreports')
     
     return HttpResponse("Invalid request", status=400)
+
+def account_approval(request):
+    return render(request, "account_approval.html")

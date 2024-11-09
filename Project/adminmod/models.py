@@ -1,8 +1,83 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.hashers import make_password
 
+#Multiuser
+#"""
+from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
-# Create your models here.
+class User(AbstractUser):
+    email = models.EmailField(unique=True)
+    username = models.CharField(max_length=150, unique=True, null=True, blank=True)
+    class Role(models.TextChoices):
+        ADMIN = "ADMIN", "Admin"
+        STUDENT = "STUDENT", "Student"
+        GUARD = "GUARD", "Guard"
+
+    base_role = Role.ADMIN
+
+    role = models.CharField(max_length=50, choices=Role.choices, default='student')
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.role = self.base_role
+            return super().save(*args, **kwargs)
+
+class StudentManager(BaseUserManager):
+    def get_queryset(self, *args, **kwargs):
+        results = super().get_queryset(*args, **kwargs)
+        return results.filter(role=User.Role.STUDENT)
+
+class Student(User):
+
+    base_role = User.Role.STUDENT
+
+    student = StudentManager()
+
+    class Meta:
+        proxy = True
+
+    def welcome(self):
+        return "Only for students"
+
+@receiver(post_save, sender=Student)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created and instance.role == "STUDENT":
+        StudentProfile.objects.create(user=instance)
+
+class StudentProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    student_id = models.IntegerField(null=True, blank=True)
+
+class GuardManager(BaseUserManager):
+    def get_queryset(self, *args, **kwargs):
+        results = super().get_queryset(*args, **kwargs)
+        return results.filter(role=User.Role.GUARD)
+
+class Guard(User):
+
+    base_role = User.Role.GUARD
+
+    guard = GuardManager()
+
+    class Meta:
+        proxy = True
+
+    def welcome(self):
+        return "Only for guards"
+
+class GuardProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    guard_id = models.IntegerField(null=True, blank=True)
+
+@receiver(post_save, sender=Guard)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created and instance.role == "GUARD":
+        GuardProfile.objects.create(user=instance)
+#"""
+#end mulitiuser
 
 class DropdownOption(models.Model):
     program1 = models.CharField(max_length=255, default='Default Program')
@@ -40,6 +115,10 @@ class Signup(models.Model):
     registration_cert = models.FileField(upload_to='registration_certs/', verbose_name='Certificate of Registration (COR)')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        # Ensure that we are storing the plain-text password as entered
+        # Don't use set_password or hash the password here
+        super(Signup, self).save(*args, **kwargs)
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
@@ -55,11 +134,10 @@ class ViolationType(models.Model):
     guidelines = models.TextField()
     sanction = models.CharField(max_length=255, null=True, blank=True)  
     sanction_period_value = models.IntegerField()
-    sanction_period_type = models.CharField(max_length=10, choices=[('Day', 'Day'), ('Week', 'Week'), ('Month', 'Month')])
+    sanction_period_type = models.CharField(max_length=10, choices=[('Hours', 'Hours'), ('Day', 'Day'), ('Week', 'Week'), ('Month', 'Month')])
 
     def __str__(self):
         return self.name
-
 
 class Report(models.Model):
     STATUS_TYPE_CHOICES = [
@@ -76,7 +154,7 @@ class Report(models.Model):
     def __str__(self):
         return f"Report for {self.student.first_name} {self.student.last_name}"
 
-class User(models.Model):
+class Userrole(models.Model):
     USER_CHOICES = [
         ('GUARD', 'GUARD'),
         ('INSTRUCTOR', 'INSTRUCTOR'),

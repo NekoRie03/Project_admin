@@ -1,20 +1,22 @@
 from django.urls import path
-
+from django.conf import settings
+from django.conf.urls.static import static
 from . import views
 
 urlpatterns = [
+    #dashboard
     path('dashboard/', views.dashboard, name='dashboard'),
     
     #issue_status
     path('DenyReport/', views.DenyReport, name='DenyReport'),
-    path('ProbationProgress/', views.ProbationProgress, name='ProbationProgress'),
+    #path('ProbationProgress/', views.ProbationProgress, name='ProbationProgress'),
+    path('monitorreport/', views.monitorrep, name='monitorreport'),
 
-    
     #user_role
     path('retry-password/', views.retry_password, name='retry_password'),
 
     #login
-    path('', views.login, name='login'),
+    path('', views.login_view, name='login'),
     path('signup/', views.signup, name='signup'),
     path('reset/', views.reset, name='reset'),
     path('resetconfirmation/', views.resetconfirmation, name='resetconfirmation'),
@@ -23,8 +25,9 @@ urlpatterns = [
     path('code/', views.code, name='code'),
 
     #student mod
-    path('studentsettings/'   , views.studset, name='studentsettings'),
-    path('studentstatus/'     , views.studstat, name='studentstatus'),   
+    path('studentsettings/'   , views.update_password, name='studentsettings'),
+    path('studentstatus/'     , views.student_status, name='studentstatus'),
+
     #guard and instructor mod
     path('manage-violations/', views.manage_violations, name='manage_violations'),
     path('edit-violation/<int:violation_id>/', views.edit_violation, name='edit_violation'),  
@@ -36,6 +39,13 @@ urlpatterns = [
     path('changepass/', views.changepass, name='changepass'),
     path('violationreports/', views.violationreports, name='violationreports'),
     path('update_status/<int:report_id>/', views.update_status, name='update_status'),
-    path('report_summary2/', views.report_summary2, name='report_summary2'),
+    path('report_summary2/', views.report_summary2, name='report_summary2'), 
+    path('account_approval/', views.account_approval, name='account_approval'),
+    path('adduser/', views.adduser, name='adduser'),
+    path('userrole/', views.userrole, name='userrole'),
+    path('edituserrole/', views.edituserrole, name='edituserrole'),
+    path("useraccount/",views.useraccount, name="useraccount"),
+    ]
 
-]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

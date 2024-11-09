@@ -1,108 +1,98 @@
----orig file report views:
+so here's my adbstractuser:
 
-def file_report(request):
-    violation_types = ViolationType.objects.all()
-    students = Signup.objects.all()
+class User(AbstractUser):
+    email = models.EmailField(unique=True)
+    username = models.CharField(max_length=150, unique=True, null=True, blank=True)
+    class Role(models.TextChoices):
+        ADMIN = "ADMIN", "Admin"
+        STUDENT = "STUDENT", "Student"
+        GUARD = "GUARD", "Guard"
 
-    search_result = None
-    selected_student = None  # Initialize selected student ID
+    base_role = Role.ADMIN
 
-    if request.method == 'POST':
-        if 'student_id_search' in request.POST:
-            # Handle search by student ID
-            student_id = request.POST.get('student_id_search')
-            try:
-                search_result = Signup.objects.get(idnumber=student_id)
-                selected_student = search_result.id  # Set the searched student's ID
-            except Signup.DoesNotExist:
-                search_result = None
-        else:
-            # Handle form submission
-            student_id = request.POST.get('student')
-            incident_date = request.POST.get('incident_date')
-            violation_type_id = request.POST.get('violation_type')
-            
-            try:
-                student = Signup.objects.get(id=student_id)
-                violation_type = ViolationType.objects.get(id=violation_type_id)
-                
-                context = {
-                    'student_id': student.idnumber,
-                    'student_name': f"{student.first_name} {student.last_name}",
-                    'incident_date': incident_date,
-                    'violation_type': violation_type.name,
-                    'db_student_id': student_id,
-                    'db_violation_type_id': violation_type_id,
-                }
-                return render(request, 'report_summary.html', context)
-            except (Signup.DoesNotExist, ViolationType.DoesNotExist) as e:
-                return HttpResponse(f"Error: {str(e)}", status=400)
-    if request.method == 'POST' and search_result:
-        # Assuming form submission logic here
-        # Gather necessary data
-        student_id = student.idnumber
-        student_name = f"{student.first_name} {student.last_name}"
-        incident_date = request.POST.get('incident_date')
-        violation_type = violation_type.name
+    role = models.CharField(max_length=50, choices=Role.choices, default='student')
 
-        # Redirect to report_summary2 with query parameters
-        return redirect('report_summary2', 
-                        student_id=student_id, 
-                        student_name=student_name, 
-                        incident_date=incident_date, 
-                        violation_type=violation_type)
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.role = self.base_role
+            return super().save(*args, **kwargs)
 
----orig signup
----views.py
-def signup(request):
-    if request.method == "POST":
-        form = SignupNow(request.POST, request.FILES)
-        
-        if form.is_valid():
-            form.save()
-            return redirect('registration_success')  # Ensure you create this page or change this to your homepage
 
-    else:
-        form = SignupNow()
+class StudentManager(BaseUserManager):
+    def get_queryset(self, *args, **kwargs):
+        results = super().get_queryset(*args, **kwargs)
+        return results.filter(role=User.Role.STUDENT)
 
-    return render(request,'login/Sign-up.html', {'form': form})
+class Student(User):
 
----forms.py
-    class SignupNow(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput())
-    confirmpass = forms.CharField(widget=forms.PasswordInput())
+    base_role = User.Role.STUDENT
+
+    student = StudentManager()
 
     class Meta:
-        model = Signup
-        fields = ['first_name', 'middle_initial', 'last_name', 'idnumber', 'email', 'password', 'confirmpass', 'program1', 'course', 'section', 'id_picture', 'registration_cert']
+        proxy = True
 
-    def clean(self):
-        cleaned_data = super().clean()
-        password = cleaned_data.get("password")
-        confirmpass = cleaned_data.get("confirmpass")
+    def welcome(self):
+        return "Only for students"
 
-        if password != confirmpass:
-            raise forms.ValidationError("Passwords do not match.")
 
----Sign-up.html            {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title> 
-    <link rel="stylesheet" type="text/css" href="{% static 'css/signup.css' %}">
-</head>
-<body>
-    <div class="signup-container">
-        <img src="{% static 'adminmod/images/logo.png' %}" alt="Logo"/>
-        <h2>SIGN UP</h2>
-        <hr/>
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit">SIGN UP</button>
-        </form>
-    </div>
-</body>
-</html>
+@receiver(post_save, sender=Student)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created and instance.role == "STUDENT":
+        StudentProfile.objects.create(user=instance)
+
+
+class StudentProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    student_id = models.IntegerField(null=True, blank=True)
+
+
+class GuardManager(BaseUserManager):
+    def get_queryset(self, *args, **kwargs):
+        results = super().get_queryset(*args, **kwargs)
+        return results.filter(role=User.Role.GUARD)
+
+
+class Guard(User):
+
+    base_role = User.Role.GUARD
+
+    guard = GuardManager()
+
+    class Meta:
+        proxy = True
+
+    def welcome(self):
+        return "Only for guards"
+
+
+class GuardProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    guard_id = models.IntegerField(null=True, blank=True)
+
+
+@receiver(post_save, sender=Guard)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created and instance.role == "GUARD":
+        GuardProfile.objects.create(user=instance)
+#"""
+#end mulitiuser
+
+
+class Signup(models.Model):
+    first_name = models.CharField(max_length=50, verbose_name='First Name')
+    middle_initial = models.CharField(max_length=1, null=True, blank=True, verbose_name='Middle Initial')
+    last_name = models.CharField(max_length=50, verbose_name='Last Name')
+    idnumber = models.CharField(max_length=20, unique=True, verbose_name='ID Number')
+    email = models.EmailField(unique=True, verbose_name='Email')
+    password = models.CharField(max_length=8, verbose_name='Password')
+    confirmpass = models.CharField(max_length=8, verbose_name='Confirm Password')
+    program1 = models.ForeignKey(DropdownOption, on_delete=models.CASCADE, null=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
+    id_picture = models.FileField(upload_to='id_pictures/', verbose_name='ID Picture')
+    registration_cert = models.FileField(upload_to='registration_certs/', verbose_name='Certificate of Registration (COR)')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
