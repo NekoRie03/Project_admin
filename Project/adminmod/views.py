@@ -267,21 +267,6 @@ def file_report(request):
                 return render(request, 'report_summary.html', context)
             except (Signup.DoesNotExist, ViolationType.DoesNotExist) as e:
                 return HttpResponse(f"Error: {str(e)}", status=400)
-            
-    if request.method == 'POST' and search_result:
-        # Assuming form submission logic here
-        # Gather necessary data
-        student_id = student.idnumber
-        student_name = f"{student.first_name} {student.last_name}"
-        incident_date = request.POST.get('incident_date')
-        violation_type = violation_type.name
-
-        # Redirect to report_summary2 with query parameters
-        return redirect('report_summary2', 
-                        student_id=student_id, 
-                        student_name=student_name, 
-                        incident_date=incident_date, 
-                        violation_type=violation_type)
 
     return render(request, 'file_report.html', {
         'violation_types': violation_types,
