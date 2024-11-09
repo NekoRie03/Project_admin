@@ -7,14 +7,14 @@
     <!-- Navigation Bar -->
     {% include "navbar student.html" %}
 
-    <div class="container mt-4">
-        <!-- Profile Section -->
+    <!-- Main Container for Profile and Form -->
+    <div class="container mt-5 pt-5">
+        
+        <!-- Include Profile Section -->
         {% include "profile_student.html" %}
-    </div>
-   
-    <div class="container my-4">
+        
         <!-- Password Update Form -->
-        <div class="card shadow-sm p-4">
+        <div class="card shadow-sm p-4 my-4">
             <h3 class="card-title mb-4">Update Password</h3>
             <form method="POST" action="{% url 'studentsettings' %}">
                 {% csrf_token %}
