@@ -470,3 +470,6 @@ def update_status(request, report_id):
 
 def account_approval(request):
     return render(request, "account_approval.html")
+
+def filter(request):
+    return render(request, "filter.html")

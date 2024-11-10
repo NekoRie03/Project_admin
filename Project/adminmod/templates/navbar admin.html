@@ -1,0 +1,29 @@
+   <!-- Navigation Bar -->
+   <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top shadow-sm">
+    <div class="container">
+        <a class="navbar-brand text-primary fw-bold" href="#">Admin Portal</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link text-primary" href="{% url 'violationreports' %}">Violation Reports</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active text-primary" href="{% url 'manage_dropdown' %}">Manage Dropdown</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active text-primary" href="{% url 'adduser' %}">Manage Accounts</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active text-primary" href="{% url 'fiter' %}">Registration Filtering</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link text-danger" href="{% url 'login' %}">Sign Out</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

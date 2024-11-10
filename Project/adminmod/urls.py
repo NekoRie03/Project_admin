@@ -45,6 +45,7 @@ urlpatterns = [
     path('userrole/', views.userrole, name='userrole'),
     path('edituserrole/', views.edituserrole, name='edituserrole'),
     path("useraccount/",views.useraccount, name="useraccount"),
+    path("filter/",views.filter, name="filter"),
     ]
 
 if settings.DEBUG:
