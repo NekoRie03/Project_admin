@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html></html>
- <head>
-    <link rel="#" href="#">
- </head>
- <body>
-   {% load static %}
+{% extends "main.html" %}
+{% block content %}
+{% load static %}
   <div class="container">
    <div class="header">
     <a href = {% url 'studentstatus'%}>
@@ -27,4 +23,4 @@
    </div>
   </div>
  </body>
-</html>
+ {% endblock content %}
