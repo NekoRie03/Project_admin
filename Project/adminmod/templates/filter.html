@@ -1,5 +1,6 @@
 {% extends "main.html" %}
 {% block content %}
+
 <body>
     {% include "navbar admin.html" %}
     <div class="container my-5">
@@ -76,7 +77,9 @@
             <tbody>
                 {% for student in students %}
                 <tr>
-                    <td><img src="{{ student.id_picture.url }}" alt="Profile Picture" class="rounded-circle" width="50"></td>
+                    <td>
+                        <img src="{{ student.id_picture.url }}" alt="Profile Picture" class="profile-img" />
+                    </td>
                     <td>{{ student.first_name }} {{ student.last_name }}</td>
                     <td>{{ student.idnumber }}</td>
                     <td>{{ student.program1.program1 }}</td>
@@ -103,4 +106,14 @@
         </div>
     </div>
 </body>
+
+<style>
+    .profile-img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+</style>
+
 {% endblock content %}
