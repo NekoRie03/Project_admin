@@ -3,25 +3,24 @@
 {% block content %}
 {% load static %}
 
-<body>
+<body class="bg-light">
+    <!-- Fixed-top Navigation Bar -->
+    {% include "navbar admin.html" %}
 
-    <!-- Navigation Bar -->
-     {% include "navbar admin.html" %}
-    <!-- Main Container for Violation Reports -->
-    <div class="container mt-5">
-        <!-- Header Section -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <i class="fas fa-home"></i>
-                <h1 class="d-inline ms-2">Violation Reports</h1>
-            </div>
+    <!-- Main Content Container with Padding for Navbar -->
+    <div class="container pt-4">
+        <!-- Header Section, Just Below Navbar -->
+        <div class="d-flex align-items-center mb-4">
+            <i class="fas fa-home fs-4 me-2 text-primary"></i>
+            <h1 class="h3 mb-0">Violation Reports</h1>
         </div>
-        
+        <hr/>
+
         <!-- Filters Form -->
         <form method="get" action="{% url 'violationreports' %}">
             <div class="row mb-4 g-3">
                 <div class="col-md-2">
-                    <label for="filter_status" class="form-label">Status:</label>
+                    <label for="filter_status" class="form-label fw-bold">Status:</label>
                     <select id="filter_status" name="filter_status" class="form-select">
                         <option value="">All</option>
                         <option value="Active" {% if request.GET.filter_status == "Active" %}selected{% endif %}>Active</option>
@@ -30,7 +29,7 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label for="filter_program" class="form-label">Program:</label>
+                    <label for="filter_program" class="form-label fw-bold">Program:</label>
                     <select id="filter_program" name="filter_program" class="form-select">
                         <option value="">All</option>
                         {% for program in programs %}
@@ -39,11 +38,11 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label for="filter_date" class="form-label">Month & Year:</label>
+                    <label for="filter_date" class="form-label fw-bold">Month & Year:</label>
                     <input type="month" id="filter_date" name="filter_date" class="form-control" value="{{ request.GET.filter_date }}">
                 </div>
                 <div class="col-md-2">
-                    <label for="filter_violation" class="form-label">Violation:</label>
+                    <label for="filter_violation" class="form-label fw-bold">Violation:</label>
                     <select id="filter_violation" name="filter_violation" class="form-select">
                         <option value="">None</option>
                         {% for violation in violations %}
@@ -52,7 +51,7 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label for="filter_sanction" class="form-label">Sanction:</label>
+                    <label for="filter_sanction" class="form-label fw-bold">Sanction:</label>
                     <select id="filter_sanction" name="filter_sanction" class="form-select">
                         <option value="">All</option>
                         {% for sanction in sanctions %}
@@ -67,42 +66,42 @@
         </form>
 
         <!-- Violation Reports Table -->
-        <table class="table table-striped table-bordered">
-            <thead>
-                <tr>
-                    <th>DATE</th>
-                    <th>Student ID</th>
-                    <th>Violation</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for report in reports %}
-                <tr>
-                    <td>{{ report.incident_date }}</td>
-                    <td>{{ report.student.idnumber }}</td>
-                    <td>{{ report.violation_type.name }}</td>
-                    <td>
-                        <form method="post" action="{% url 'update_status' report.id %}">
-                            {% csrf_token %}
-                            <a href="{% url 'report_summary2' %}?student_id={{ report.student.idnumber }}&incident_date={{ report.incident_date }}&violation_type={{ report.violation_type.name }}" class="btn btn-info btn-sm mb-2">VIEW</a>
-                            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
-                                <option value="On Hold" {% if report.status == "On Hold" %}selected{% endif %}>On Hold</option>
-                                <option value="Active" {% if report.status == "Active" %}selected{% endif %}>Active</option>
-                                <option value="Resolved" {% if report.status == "Resolved" %}selected{% endif %}>Resolved</option>
-                                <option value="Deny" {% if report.status == "Deny" %}selected{% endif %}>Deny</option>
-                                <option value="MODIFY">MODIFY</option>
-                                <option value="REMOVE">REMOVE</option>
-                            </select>
-                        </form>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered align-middle">
+                <thead class="table-primary">
+                    <tr>
+                        <th scope="col">DATE</th>
+                        <th scope="col">Student ID</th>
+                        <th scope="col">Violation</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td>{{ report.incident_date }}</td>
+                        <td>{{ report.student.idnumber }}</td>
+                        <td>{{ report.violation_type.name }}</td>
+                        <td>
+                            <form method="post" action="{% url 'update_status' report.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <a href="{% url 'report_summary2' %}?student_id={{ report.student.idnumber }}&incident_date={{ report.incident_date }}&violation_type={{ report.violation_type.name }}" class="btn btn-info btn-sm mb-2">VIEW</a>
+                                <select name="status" class="form-select form-select-sm d-inline w-auto" onchange="this.form.submit()">
+                                    <option value="On Hold" {% if report.status == "On Hold" %}selected{% endif %}>On Hold</option>
+                                    <option value="Active" {% if report.status == "Active" %}selected{% endif %}>Active</option>
+                                    <option value="Resolved" {% if report.status == "Resolved" %}selected{% endif %}>Resolved</option>
+                                    <option value="Deny" {% if report.status == "Deny" %}selected{% endif %}>Deny</option>
+                                    <option value="MODIFY">MODIFY</option>
+                                    <option value="REMOVE">REMOVE</option>
+                                </select>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-
-
 </body>
 
 {% endblock %}

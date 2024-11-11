@@ -3,45 +3,42 @@
 {% block content %}
 {% load static %}
 
-
 <body class="bg-light">
-
     <!-- Navigation Bar -->
-     {% include "navbar admin.html" %}
-    
-    <div class="container my-5">
+    {% include "navbar admin.html" %}
+
+    <div class="container mt-5 pt-5 pb-5">
         <div class="d-flex align-items-center mb-3">
-            <a href="{% url 'userrole' %}">
-                <img src="{% static 'adminmod/images/arrow-left.png' %}" alt="Back" height="30" width="30" class="me-3"/>
-            </a>
             <h1 class="h3 mb-0">Add User</h1>
         </div>
-        <hr/>
+        <hr />
 
         <form method="POST" class="bg-white p-4 rounded shadow-sm">
             {% csrf_token %}
-            <div class="mb-3">
-                <label for="employee-id" class="form-label">Employee ID:</label>
-                {{ form.employee_id }}
-                <div class="text-danger">{{ form.employee_id.errors }}</div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="employee-id" class="form-label">Employee ID:</label>
+                    {{ form.employee_id }}
+                    <div class="text-danger">{{ form.employee_id.errors }}</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="first-name" class="form-label">First Name:</label>
+                    {{ form.first_name }}
+                    <div class="text-danger">{{ form.first_name.errors }}</div>
+                </div>
             </div>
 
-            <div class="mb-3">
-                <label for="first-name" class="form-label">First Name:</label>
-                {{ form.first_name }}
-                <div class="text-danger">{{ form.first_name.errors }}</div>
-            </div>
-
-            <div class="mb-3">
-                <label for="middle-initial" class="form-label">Middle Initial:</label>
-                {{ form.middle_initial }}
-                <div class="text-danger">{{ form.middle_initial.errors }}</div>
-            </div>
-
-            <div class="mb-3">
-                <label for="last-name" class="form-label">Last Name:</label>
-                {{ form.last_name }}
-                <div class="text-danger">{{ form.last_name.errors }}</div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="middle-initial" class="form-label">Middle Initial:</label>
+                    {{ form.middle_initial }}
+                    <div class="text-danger">{{ form.middle_initial.errors }}</div>
+                </div>
+                <div class="col-md-6">
+                    <label for="last-name" class="form-label">Last Name:</label>
+                    {{ form.last_name }}
+                    <div class="text-danger">{{ form.last_name.errors }}</div>
+                </div>
             </div>
 
             <div class="mb-3">
@@ -52,13 +49,13 @@
 
             <div class="mb-3">
                 <label for="generated-email" class="form-label">Generated Email:</label>
-                <input type="text" id="generated-email" value="{{ generated_email|default:'lastname.firstname@email.com' }}" class="form-control" readonly/>
+                <input type="text" id="generated-email" value="{{ generated_email|default:'lastname.firstname@email.com' }}" readonly />
             </div>
 
             <div class="mb-3">
                 <label for="generated-password" class="form-label">Generated Password:</label>
                 <div class="input-group">
-                    <input type="text" id="generated-password" value="{{ generated_password|default:'randompassword' }}" class="form-control" readonly/>
+                    <input type="text" id="generated-password" value="{{ generated_password|default:'randompassword' }}" readonly />
                     <button type="button" id="retry-password" class="btn btn-secondary">Retry</button>
                 </div>
             </div>

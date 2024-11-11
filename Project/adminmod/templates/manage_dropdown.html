@@ -1,30 +1,27 @@
 {% extends "main.html" %}
 {% block content %}
 
+<!-- Navbar -->
+{% include "navbar admin.html" %}
 
-
-<div class="container mt-5">
-
-    <!--Navigation-->
-    {% include "navbar admin.html" %}
-
-    <h2 class="text-center mb-4">Manage Dropdown Options</h2>
+<div class="container" style="padding-top: 100px;">
+    <h2 class="text-center mb-4">Program and Course Management</h2>
 
     <!-- Form to Add New Program -->
-    <form method="POST" class="mb-4 p-3 border rounded">
+    <form method="POST" class="mb-4 p-3 border rounded shadow-sm">
         {% csrf_token %}
         <div class="form-group">
-            <label for="new_program" class="font-weight-bold">Add New Program:</label>
+            <label for="new_program" class="fw-bold">Add New Program:</label>
             <input type="text" id="new_program" name="new_program" class="form-control" placeholder="Enter new program" required>
         </div>
-        <button type="submit" name="add_program" class="btn btn-primary mt-2">Add Program</button>
+        <button type="submit" name="add_program" class="btn btn-primary mt-2 w-100">Add Program</button>
     </form>
 
     <!-- Form to Add New Course -->
-    <form method="POST" class="mb-4 p-3 border rounded">
+    <form method="POST" class="mb-4 p-3 border rounded shadow-sm">
         {% csrf_token %}
         <div class="form-group">
-            <label for="new_course" class="font-weight-bold">Add New Course:</label>
+            <label for="new_course" class="fw-bold">Add New Course:</label>
             <select name="program_id" class="form-control mb-2" required>
                 <option value="">Select Program</option>
                 {% for program in program_options %}
@@ -33,14 +30,14 @@
             </select>
             <input type="text" id="new_course" name="new_course" class="form-control" placeholder="Enter new course" required>
         </div>
-        <button type="submit" name="add_course" class="btn btn-primary mt-2">Add Course</button>
+        <button type="submit" name="add_course" class="btn btn-primary mt-2 w-100">Add Course</button>
     </form>
 
     <!-- Form to Add New Section -->
-    <form method="POST" class="mb-4 p-3 border rounded">
+    <form method="POST" class="mb-4 p-3 border rounded shadow-sm">
         {% csrf_token %}
         <div class="form-group">
-            <label for="new_section" class="font-weight-bold">Add New Section:</label>
+            <label for="new_section" class="fw-bold">Add New Section:</label>
             <select name="course_id" class="form-control mb-2" required>
                 <option value="">Select Course</option>
                 {% for course in course_options %}
@@ -49,12 +46,11 @@
             </select>
             <input type="text" id="new_section" name="new_section" class="form-control" placeholder="Enter new section" required>
         </div>
-        <button type="submit" name="add_section" class="btn btn-primary mt-2">Add Section</button>
+        <button type="submit" name="add_section" class="btn btn-primary mt-2 w-100">Add Section</button>
     </form>
 
-    <h3>Current Options</h3>
+    <h3 class="mt-5">Current Options</h3>
 
-    <!-- Display lists in a table-like structure -->
     <div class="row">
         <!-- Programs Column -->
         <div class="col-md-4">
@@ -108,5 +104,7 @@
         </div>
     </div>
 </div>
+
+
 
 {% endblock content %}

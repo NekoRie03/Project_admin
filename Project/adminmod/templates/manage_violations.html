@@ -1,13 +1,13 @@
 {% extends "main.html" %}
 {% block content %}
 
+<!-- Navigation -->
+{% include "navbar admin.html" %}
 
- <!--Navigation-->
- {% include "navbar admin.html" %}
-
-<div class="container my-4">
+<div class="container my-5" style="padding-top: 100px;">
     <h2 class="mb-4 text-center">Manage Violations</h2>
     
+    <!-- Add New Violation Form -->
     <div class="card shadow-sm p-4 mb-4">
         <h4 class="mb-3">Add New Violation</h4>
         <form method="POST">
@@ -15,10 +15,11 @@
             <div class="mb-3">
                 {{ form.as_p }}
             </div>
-            <button type="submit" class="btn btn-primary">Add Violation</button>
+            <button type="submit" class="btn btn-primary w-100">Add Violation</button>
         </form>
     </div>
 
+    <!-- Existing Violations List -->
     <div class="card shadow-sm p-4">
         <h3 class="mb-3">Existing Violations</h3>
         <ul class="list-group list-group-flush">
@@ -35,5 +36,7 @@
         </ul>
     </div>
 </div>
+
+
 
 {% endblock content %}

@@ -33,7 +33,7 @@ urlpatterns = [
     path('edit-violation/<int:violation_id>/', views.edit_violation, name='edit_violation'),  
     path('report-success/', views.report_success, name='report_success'),
     path('report-summary/', views.report_summary, name='report_summary'),
-    path('manage_dropdown/', views.manage_dropdown, name='manage_dropdown'),
+    path('manageprogram/', views.manage_dropdown, name='manageprogram'),
     path('registration_success/', views.registration_success, name='registration_success'),
     path('file-report/', views.file_report, name='file_report'),
     path('changepass/', views.changepass, name='changepass'),
@@ -48,6 +48,7 @@ urlpatterns = [
     path('filter/', views.filter_accounts, name='filter'),
     path('approve/<int:student_id>/', views.approve_student, name='approve_student'),
     path('reject/<int:student_id>/', views.reject_student, name='reject_student'),
+    path('staff/', views.staff_list, name='staff_list'),
     ]
 
 if settings.DEBUG:

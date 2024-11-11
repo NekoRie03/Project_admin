@@ -1,5 +1,5 @@
-   <!-- Navigation Bar -->
-   <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top shadow-sm">
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top shadow-sm">
     <div class="container">
         <a class="navbar-brand text-primary fw-bold" href="#">Admin Portal</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -11,18 +11,20 @@
                     <a class="nav-link text-primary" href="{% url 'violationreports' %}">Violation Reports</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active text-primary" href="{% url 'manage_dropdown' %}">Manage Dropdown</a>
+                    <a class="nav-link text-primary" href="{% url 'manageprogram' %}">Program and Course Management</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active text-primary" href="{% url 'adduser' %}">Manage Accounts</a>
+                    <a class="nav-link text-primary" href="{% url 'adduser' %}">Manage Accounts</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active text-primary" href="{% url 'filter' %}">Registration Filtering</a>
+                    <a class="nav-link text-primary" href="{% url 'filter' %}">Registration Filtering</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active text-primary" href="{% url 'manage_violations' %}">Manage Violations</a>
+                    <a class="nav-link text-primary" href="{% url 'manage_violations' %}">Manage Violations</a>
                 </li>
-
+                <li class="nav-item">
+                    <a class="nav-link text-primary" href="{% url 'staff_list' %}">Staff List</a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link text-danger" href="{% url 'login' %}">Sign Out</a>
                 </li>
@@ -30,3 +32,18 @@
         </div>
     </div>
 </nav>
+
+<style>
+    .navbar .nav-link {
+        color: black;
+        font-weight: bold;
+    }
+
+    .navbar .nav-link:hover {
+        color: #0056b3;
+    }
+
+    .navbar .nav-link.text-danger {
+        color: #dc3545 !important;
+    }
+</style>

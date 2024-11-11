@@ -183,7 +183,7 @@ def manage_dropdown(request):
             new_program = request.POST.get('new_program')
             if new_program:
                 DropdownOption.objects.create(program1=new_program)
-                return redirect('manage_dropdown')
+                return redirect('manageprogram')
 
         # Add a new course
         if 'add_course' in request.POST:
@@ -192,7 +192,7 @@ def manage_dropdown(request):
             if new_course and program_id:
                 program = DropdownOption.objects.get(id=program_id)
                 Course.objects.create(program=program, course_name=new_course)
-                return redirect('manage_dropdown')
+                return redirect('manageprogram')
 
         # Add a new section
         if 'add_section' in request.POST:
@@ -201,25 +201,25 @@ def manage_dropdown(request):
             if new_section and course_id:
                 course = Course.objects.get(id=course_id)
                 Section.objects.create(course=course, section_name=new_section)
-                return redirect('manage_dropdown')
+                return redirect('manageprogram')
 
         # Delete a program
         if 'delete_program' in request.POST:
             program_id = request.POST.get('delete_program')
             DropdownOption.objects.filter(id=program_id).delete()
-            return redirect('manage_dropdown')
+            return redirect('manageprogram')
 
         # Delete a course
         if 'delete_course' in request.POST:
             course_id = request.POST.get('delete_course')
             Course.objects.filter(id=course_id).delete()
-            return redirect('manage_dropdown')
+            return redirect('manageprogram')
 
         # Delete a section
         if 'delete_section' in request.POST:
             section_id = request.POST.get('delete_section')
             Section.objects.filter(id=section_id).delete()
-            return redirect('manage_dropdown')
+            return redirect('manageprogram')
 
     # Fetch all options for the dropdowns
     program_options = DropdownOption.objects.all()
@@ -522,3 +522,30 @@ def reject_student(request, student_id):
     except Exception as e:
         pass  # Optionally log error
     return redirect('filter')
+
+def staff_list(request):
+    staff_members = Userrole.objects.all()  # Fetch all Userrole instances
+    return render(request, 'staff_list.html', {'staff_members': staff_members})
+
+from django.shortcuts import render
+from .models import Userrole# Assuming your model is named `Userrole`
+
+def staff_list(request):
+    query = request.GET.get('query', '')
+    if query:
+        staff_members = Userrole.objects.filter(
+            first_name__icontains=query
+        ) | Userrole.objects.filter(
+            last_name__icontains=query
+        ) | Userrole.objects.filter(
+            employee_id__icontains=query
+        ) | Userrole.objects.filter(
+            email__icontains=query
+        ) | Userrole.objects.filter(
+            position__icontains=query
+        )
+    else:
+        staff_members = Userrole.objects.all()
+    
+    return render(request, 'staff_list.html', {'staff_members': staff_members})
+
