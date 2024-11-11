@@ -7,9 +7,11 @@ from django.http import JsonResponse
 from django.shortcuts import (HttpResponse,HttpResponseRedirect,get_object_or_404,redirect,render,)
 from django.utils import timezone
 from django.conf import settings
+from .models import (Course,DropdownOption,Report,Section,Signup,User,ViolationType,Userrole, ApprovedStudent, RejectedStudent)
+from django.db import transaction, IntegrityError
 # Local imports
 from .forms import (ReportForm,SignupNow,UserroleForm,ViolationTypeForm,)
-from .models import (Course,DropdownOption,Report,Section,Signup,User,ViolationType,Userrole)
+
 # Python standard library imports
 import datetime, random, string
 # ------ Admin Dashboard ------
@@ -473,3 +475,50 @@ def account_approval(request):
 
 def filter(request):
     return render(request, "filter.html")
+
+def filter_accounts(request):
+    search_id = request.GET.get('search', '')
+    students = Signup.objects.filter(idnumber__icontains=search_id)
+    return render(request, 'filter.html', {'students': students})
+
+def approve_student(request, student_id):
+    student = get_object_or_404(Signup, id=student_id)
+    try:
+        with transaction.atomic():
+            ApprovedStudent.objects.create(
+                first_name=student.first_name,
+                middle_initial=student.middle_initial,
+                last_name=student.last_name,
+                idnumber=student.idnumber,
+                email=student.email,
+                program1=student.program1,
+                course=student.course,
+                section=student.section,
+                id_picture=student.id_picture,
+                registration_cert=student.registration_cert,
+            )
+            student.delete()  # Remove from Signup after approval
+    except Exception as e:
+        pass  # Optionally log error
+    return redirect('filter')
+
+def reject_student(request, student_id):
+    student = get_object_or_404(Signup, id=student_id)
+    try:
+        with transaction.atomic():
+            RejectedStudent.objects.create(
+                first_name=student.first_name,
+                middle_initial=student.middle_initial,
+                last_name=student.last_name,
+                idnumber=student.idnumber,
+                email=student.email,
+                program1=student.program1,
+                course=student.course,
+                section=student.section,
+                id_picture=student.id_picture,
+                registration_cert=student.registration_cert,
+            )
+            student.delete()  # Remove from Signup after rejection
+    except Exception as e:
+        pass  # Optionally log error
+    return redirect('filter')

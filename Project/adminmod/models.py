@@ -170,3 +170,36 @@ class Userrole(models.Model):
     
     def __str__(self):
         return f"{self.first_name} {self.middle_initial or ''} {self.last_name}".strip()
+
+class ApprovedStudent(models.Model):
+    first_name = models.CharField(max_length=50, null=True, blank=True)
+    middle_initial = models.CharField(max_length=1, null=True, blank=True)
+    last_name = models.CharField(max_length=50, null=True, blank=True)
+    idnumber = models.CharField(max_length=20, unique=True, null=True, blank=True)
+    email = models.EmailField(unique=True, null=True, blank=True)
+    program1 = models.CharField(max_length=255, null=True, blank=True)
+    course = models.CharField(max_length=255, null=True, blank=True)
+    section = models.CharField(max_length=255, null=True, blank=True)
+    id_picture = models.FileField(upload_to='approved_id_pictures/', null=True, blank=True)
+    registration_cert = models.FileField(upload_to='approved_registration_certs/', null=True, blank=True)
+    approved_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} ({self.idnumber})"
+
+
+class RejectedStudent(models.Model):
+    first_name = models.CharField(max_length=50, null=True, blank=True)
+    middle_initial = models.CharField(max_length=1, null=True, blank=True)
+    last_name = models.CharField(max_length=50, null=True, blank=True)
+    idnumber = models.CharField(max_length=20, unique=True, null=True, blank=True)
+    email = models.EmailField(unique=True, null=True, blank=True)
+    program1 = models.CharField(max_length=255, null=True, blank=True)
+    course = models.CharField(max_length=255, null=True, blank=True)
+    section = models.CharField(max_length=255, null=True, blank=True)
+    id_picture = models.FileField(upload_to='rejected_id_pictures/', null=True, blank=True)
+    registration_cert = models.FileField(upload_to='rejected_registration_certs/', null=True, blank=True)
+    rejected_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} ({self.idnumber})"
