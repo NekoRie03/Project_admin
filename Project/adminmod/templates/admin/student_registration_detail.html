@@ -1,0 +1,45 @@
+{% extends 'admin/change_form.html' %}
+
+{% block object-tools-items %}
+    <li>
+        <a href="{% url 'admin:adminmod_studentregistration_changelist' %}">
+            Back to list
+        </a>
+    </li>
+{% endblock %}
+
+{% block field_sets %}
+    <fieldset class="module aligned">
+        <h2>Student Information</h2>
+        <div class="form-row field-user">
+            <div>
+                <label>Student Name:</label>
+                <strong>{{ registration.user.get_full_name }}</strong>
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="module aligned">
+        <h2>Documents</h2>
+        <div class="form-row field-cor_image">
+            <div>
+                <label>COR Image:</label>
+                {% if registration.cor_image %}
+                    <img src="{{ registration.cor_image.url }}" alt="COR Image" width="400">
+                {% else %}
+                    No COR image uploaded.
+                {% endif %}
+            </div>
+        </div>
+        <div class="form-row field-id_image">
+            <div>
+                <label>ID Image:</label>
+                {% if registration.id_image %}
+                    <img src="{{ registration.id_image.url }}" alt="ID Image" width="400">
+                {% else %}
+                    No ID image uploaded.
+                {% endif %}
+            </div>
+        </div>
+    </fieldset>
+{% endblock %}

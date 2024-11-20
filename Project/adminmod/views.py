@@ -1,472 +1,197 @@
-# Django core imports
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth import get_user_model
+from .forms import AdminSignupForm, GuardSignupForm, StudentSignupForm, StudentRegistrationForm  # Create these forms as needed
+from .models import StudentRegistration, User
+from django.contrib.auth import login, authenticate
+from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import AuthenticationForm
-from django.http import JsonResponse
-from django.shortcuts import (HttpResponse,HttpResponseRedirect,get_object_or_404,redirect,render,)
-from django.utils import timezone
-from django.conf import settings
-# Local imports
-from .forms import (ReportForm,SignupNow,UserroleForm,ViolationTypeForm,)
-from .models import (Course,DropdownOption,Report,Section,Signup,User,ViolationType,Userrole)
-# Python standard library imports
-import datetime, random, string
-# ------ Admin Dashboard ------
-def dashboard(request):
-    return render(request,'Dashboard.html')
+from django.urls import reverse
+from .decorators import approved_student_required, guard_required
+from django.contrib.auth import logout
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.middleware.csrf import get_token
 
-def DenyReport(request):
-    return render(request, 'DenyReport.html')
+User = get_user_model()
 
-# ------ User Roles ------
-def userrole(request):
-    return render(request, 'Account List.html') 
+def student_signup(request):
+    if request.method == "POST":
+        user_form = StudentSignupForm(request.POST)
+        registration_form = StudentRegistrationForm(request.POST, request.FILES)
+        if user_form.is_valid() and registration_form.is_valid():
+            user = user_form.save(commit=False)
+            user.role = User.Role.STUDENT
+            user.is_active = True  # Change this to True
+            user.save()
 
-def edituserrole(request):
-    return render(request, 'Edit User Role.html')
+            registration = registration_form.save(commit=False)
+            registration.user = user
+            registration.save()
 
-def generate_random_password():
-    return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(10))
+            return redirect('pending_review')
+    else:
+        user_form = StudentSignupForm()
+        registration_form = StudentRegistrationForm()
 
-def useraccount(request):
-    return render(request, 'UserAccount.html')
-
-def adduser(request):
-    if request.method == 'POST':
-        form = UserroleForm(request.POST)
-        if form.is_valid():
-            # Extract form data
-            employee_id = form.cleaned_data['employee_id']
-            first_name = form.cleaned_data['first_name']
-            middle_initial = form.cleaned_data['middle_initial']
-            last_name = form.cleaned_data['last_name']
-            position = form.cleaned_data['position']
-            
-            # Generate email based on first and last name
-            email = f"{last_name.lower()}.{first_name.lower()}@email.com"
-            password = generate_random_password()
-            
-            # Create the user in the database
-            userrole = Userrole.objects.create(
-                employee_id=employee_id,
-                first_name=first_name,
-                middle_initial=middle_initial,
-                last_name=last_name,
-                email=email,
-                password=password,
-                position=position,
-            )
-
-            # Pass generated email and password to the template
-            return render(request, 'Add User.html', {
-                'form': UserroleForm(),  # Clear the form after submission
-                'success_message': "User was successfully created."  # Add success message
-            })
-        else:
-            return render(request, 'Add User.html', {'form': form})
-
-    # Generate a random password for the initial GET request
-    password = generate_random_password()
-    return render(request, 'Add User.html', {
-        'form': UserroleForm(),
-        'generated_password': password
+    return render(request, 'signup/student_signup.html', {
+        'user_form': user_form,
+        'registration_form': registration_form
     })
 
-# View for generating a new password via AJAX
-def retry_password(request):
-    if request.method == 'GET':
-        new_password = generate_random_password()
-        return JsonResponse({'generated_password': new_password})
+# View for admin to list pending registrations
+@login_required
+@user_passes_test(lambda u: u.is_staff)  # Restrict to admin/staff only
+def student_review_list(request):
+    registrations = StudentRegistration.objects.filter(is_approved=False)
+    return render(request, 'admin/student_review_list.html', {'registrations': registrations})
 
-def useraccount(request):
-    return render(request, 'user_role/UserAccount.html')
-#------ Login ------
+# View to handle approve/decline actions
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def approve_registration(request, registration_id):
+    registration = get_object_or_404(StudentRegistration, id=registration_id)
+    action = request.POST.get("action")
+    if action == "approve":
+        registration.is_approved = True
+        registration.review_comments = "Approved by admin"
+    elif action == "decline":
+        registration.is_approved = False
+        registration.review_comments = "Declined by admin"
+    registration.save()
+    return redirect('student_review_list')
 
-def login(request):
-    return render(request, 'login/LOGIN.html')
+def role_signup(request):
+    if request.method == "POST":
+        role = request.POST.get("role")  # Get selected role from dropdown
+        if role == User.Role.ADMIN:
+            form = AdminSignupForm(request.POST)
+        elif role == User.Role.GUARD:
+            form = GuardSignupForm(request.POST)
+        else:
+            form = AdminSignupForm(request.POST)  # Fallback to admin form (you could handle this differently)
 
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.role = role  # Ensure the role is correctly assigned
+            user.save()
+            return redirect('registration_success')  # Redirect to success page
+    else:
+        form = AdminSignupForm()  # Use admin form to get role selection dropdown
+
+    return render(request, 'signup/role_signup.html', {'form': form})
+
+def admin_signup(request):
+    if request.method == "POST":
+        form = AdminSignupForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.role = User.Role.ADMIN
+            user.save()
+            return redirect('login')  # or wherever you want to redirect
+    else:
+        form = AdminSignupForm()
+    return render(request, 'signup/admin_signup.html', {'form': form})
+
+def guard_signup(request):
+    if request.method == "POST":
+        form = GuardSignupForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.role = User.Role.GUARD
+            user.save()
+            return redirect('login')
+    else:
+        form = GuardSignupForm()
+    return render(request, 'signup/guard_signup.html', {'form': form})
+
+def registration_success(request):
+    return render(request, 'signup/registration_success.html')  # Render the success page
+
+def pending_review(request):
+    return render(request, 'signup/pending_review.html')
+
+@ensure_csrf_cookie
 def login_view(request):
+    if request.user.is_authenticated:
+        if request.user.role == "STUDENT":
+            try:
+                registration = StudentRegistration.objects.get(user=request.user)
+                if registration.is_approved:
+                    return redirect('student_profile')
+                else:
+                    return redirect('pending_review')
+            except StudentRegistration.DoesNotExist:
+                pass
+        elif request.user.role == "ADMIN":
+            return redirect('admin:index')
+        elif request.user.role == "GUARD":
+            return redirect('guard_dashboard')
+    
     if request.method == 'POST':
-        idnumber = request.POST.get('id-number')
+        username = request.POST.get('username')
         password = request.POST.get('password')
         
-        try:
-            user = Signup.objects.get(idnumber=idnumber)
-            if password == user.password:  # Compare with plain text password
-                # Log in user (store user ID and course ID in session, for example)
-                request.session['user_id'] = user.id
-                request.session['course_id'] = user.course.id  # Only store course ID, not the full object
-                return redirect('studentstatus')  # Redirect to landing page
-            else:
-                error = "Invalid ID number or password."
-        except Signup.DoesNotExist:
-            error = "User not found."
+        if not username or not password:
+            messages.error(request, 'Please provide both username and password.')
+            return render(request, 'login.html')
         
-        return render(request, 'login/LOGIN.html', {'error': error})  # Render login page with error
-    
-    return render(request, 'login/LOGIN.html')  # Initial GET request
-
-def student_status(request):
-    # Check if the user is logged in and has an ID in the session
-    user_id = request.session.get('user_id')  # Adjust based on your login session setup
-
-    if user_id:
-        # Retrieve the logged-in user's data
-        user = Signup.objects.get(id=user_id)
-        context = {
-            'user': user,
-            'MEDIA_URL': settings.MEDIA_URL,
-        }
-        return render(request, 'Student Status.html', context)
-    else:
-        return redirect('login')  # Redirect to login page if not logged in
-    
-def update_password(request):
-    user_id = request.session.get('user_id')
-    if not user_id:
-        messages.error(request, "Please log in first.")
-        return redirect('login')
-
-    try:
-        user = Signup.objects.get(id=user_id)
-    except Signup.DoesNotExist:
-        messages.error(request, "User not found.")
-        return redirect('login')
-
-    if request.method == 'POST':
-        current_password = request.POST.get('current_password')
-        new_password = request.POST.get('new_password')
-        confirm_password = request.POST.get('confirm_password')
+        user = authenticate(request, username=username, password=password)
         
-        if current_password != user.password:
-            messages.error(request, "Current password is incorrect.")
-            return render(request, 'Student Settings.html', {'user': user})
-        
-        if new_password != confirm_password:
-            messages.error(request, "New passwords do not match.")
-            return render(request, 'Student Settings.html', {'user': user})
-        
-        user.password = new_password
-        user.save()
-        messages.success(request, "Password updated successfully. Please log in again.")
-        request.session.flush()
-        return redirect('login')
-
-    return render(request, 'Student Settings.html', {'user': user})
-
-def signup(request):
-    if request.method == "POST":
-        form = SignupNow(request.POST, request.FILES)
-        
-        if form.is_valid():
-            form.save()
-            return redirect('registration_success')  # Ensure you create this page or change this to your homepage
-
-    else:
-        form = SignupNow()
-
-    return render(request,'login/Sign-up.html', {'form': form})
-
-def studentstatus(request):
-    return render(request, 'Student Status.html')
-
-def studentsettings(request):
-    return render(request, 'Student Settings.html')
-
-def manage_dropdown(request):
-    if request.method == 'POST':
-        # Add a new program
-        if 'add_program' in request.POST:
-            new_program = request.POST.get('new_program')
-            if new_program:
-                DropdownOption.objects.create(program1=new_program)
-                return redirect('manage_dropdown')
-
-        # Add a new course
-        if 'add_course' in request.POST:
-            new_course = request.POST.get('new_course')
-            program_id = request.POST.get('program_id')
-            if new_course and program_id:
-                program = DropdownOption.objects.get(id=program_id)
-                Course.objects.create(program=program, course_name=new_course)
-                return redirect('manage_dropdown')
-
-        # Add a new section
-        if 'add_section' in request.POST:
-            new_section = request.POST.get('new_section')
-            course_id = request.POST.get('course_id')
-            if new_section and course_id:
-                course = Course.objects.get(id=course_id)
-                Section.objects.create(course=course, section_name=new_section)
-                return redirect('manage_dropdown')
-
-        # Delete a program
-        if 'delete_program' in request.POST:
-            program_id = request.POST.get('delete_program')
-            DropdownOption.objects.filter(id=program_id).delete()
-            return redirect('manage_dropdown')
-
-        # Delete a course
-        if 'delete_course' in request.POST:
-            course_id = request.POST.get('delete_course')
-            Course.objects.filter(id=course_id).delete()
-            return redirect('manage_dropdown')
-
-        # Delete a section
-        if 'delete_section' in request.POST:
-            section_id = request.POST.get('delete_section')
-            Section.objects.filter(id=section_id).delete()
-            return redirect('manage_dropdown')
-
-    # Fetch all options for the dropdowns
-    program_options = DropdownOption.objects.all()
-    course_options = Course.objects.all()
-    section_options = Section.objects.all()
-
-    return render(request, 'manage_dropdown.html', {
-        'program_options': program_options,
-        'course_options': course_options,
-        'section_options': section_options,
-    })
-
-def file_report(request):
-    violation_types = ViolationType.objects.all()
-    students = Signup.objects.all()
-
-    search_result = None
-    selected_student = None  # Initialize selected student ID
-
-    if request.method == 'POST':
-        if 'student_id_search' in request.POST:
-            # Handle search by student ID
-            student_id = request.POST.get('student_id_search')
-            try:
-                search_result = Signup.objects.get(idnumber=student_id)
-                selected_student = search_result.id  # Set the searched student's ID
-            except Signup.DoesNotExist:
-                search_result = None
-        else:
-            # Handle form submission
-            student_id = request.POST.get('student')
-            incident_date = request.POST.get('incident_date')
-            violation_type_id = request.POST.get('violation_type')
+        if user is not None:
+            login(request, user)
             
-            try:
-                student = Signup.objects.get(id=student_id)
-                violation_type = ViolationType.objects.get(id=violation_type_id)
-                
-                context = {
-                    'student_id': student.idnumber,
-                    'student_name': f"{student.first_name} {student.last_name}",
-                    'incident_date': incident_date,
-                    'violation_type': violation_type.name,
-                    'db_student_id': student_id,
-                    'db_violation_type_id': violation_type_id,
-                }
-                return render(request, 'report_summary.html', context)
-            except (Signup.DoesNotExist, ViolationType.DoesNotExist) as e:
-                return HttpResponse(f"Error: {str(e)}", status=400)
-
-    return render(request, 'file_report.html', {
-        'violation_types': violation_types,
-        'students': students,
-        'search_result': search_result,
-        'selected_student': selected_student,
-    })
-
-def report_summary(request):
-    if request.method == 'POST':
-        if 'confirm_submission' in request.POST:
-            try:
-                # Create and save the report
-                report = Report.objects.create(
-                    student_id=request.POST.get('db_student_id'),
-                    incident_date=request.POST.get('incident_date'),
-                    violation_type_id=request.POST.get('db_violation_type_id')
-                )
-                return redirect('report_success')
-            except Exception as e:
-                return HttpResponse(f"Error saving report: {str(e)}", status=500)
-        
-        elif 'cancel_submission' in request.POST:
-            return redirect('file_report')
+            if user.role == "STUDENT":
+                try:
+                    registration = StudentRegistration.objects.get(user=user)
+                    if registration.is_approved:
+                        next_url = request.GET.get('next')
+                        if next_url:
+                            return redirect(next_url)
+                        return redirect('student_profile')
+                    else:
+                        messages.warning(request, 'Your account is pending approval.')
+                        logout(request)
+                        return redirect('pending_review')
+                except StudentRegistration.DoesNotExist:
+                    messages.error(request, 'No registration found.')
+                    logout(request)
+                    return redirect('login')
+            elif user.role == "ADMIN":
+                return redirect('admin:index')
+            elif user.role == "GUARD":
+                return redirect('guard_dashboard')
+        else:
+            messages.error(request, 'Invalid username or password.')
     
-    return redirect('file_report')
+    return render(request, 'login.html')
 
-def report_summary2(request):
-    # Get the violation type name from GET parameters
-    violation_type_name = request.GET.get('violation_type')  
+@login_required
+@guard_required
+def guard_dashboard(request):
+    return render(request, 'guard/dashboard.html')
 
-    # Try to fetch the ViolationType object
+@login_required
+@approved_student_required
+def student_profile(request):
     try:
-        violation_type = ViolationType.objects.get(name=violation_type_name)
+        registration = StudentRegistration.objects.get(user=request.user)
         context = {
-            'violation_type': violation_type,
-            'sanction_period_value': violation_type.sanction_period_value,
-            'sanction_period_type': violation_type.sanction_period_type,
-            'sanction': violation_type.sanction,
+            'registration': registration,
+            'user': request.user
         }
-    except ViolationType.DoesNotExist:
-        context = {
-            'error_message': 'Violation Type not found.'
-        }
+        return render(request, 'student/profile.html', context)
+    except StudentRegistration.DoesNotExist:
+        messages.error(request, 'No registration found for this account.')
+        return redirect('login')
 
-    # Get student data from GET parameters
-    student_id = request.GET.get('student_id')
-    student_name = None  # Initialize student_name
+@login_required
+def logout_view(request):
+    logout(request)
+    messages.success(request, 'You have been successfully logged out.')
+    return redirect('login')
 
-    if student_id:
-        try:
-            # Fetch the student from the Signup model using student_id
-            student = Signup.objects.get(id=student_id)
-            student_name = f"{student.first_name} {student.last_name}"  # Combine first and last name
-        except Signup.DoesNotExist:
-            student_name = 'Unknown Student'  # Fallback if the student is not found
+# For Django admin logout override
+def admin_logout_view(request):
+    logout(request)
+    return redirect('login')
 
-    # Add student data to the context without overwriting the previous data
-    context.update({
-        'student_id': student_id,
-        'student_name': student_name,
-        'incident_date': request.GET.get('incident_date'),
-        'violation_type': violation_type_name,
-    })
-
-    # Render the template with the combined context
-    return render(request, 'report_summary2.html', context)
-
-def report_success(request):
-    return render(request, 'report_success.html')
-
-# Manage Violations (for admins)
-def manage_violations(request):
-    violations = ViolationType.objects.all()
-    if request.method == 'POST':
-        form = ViolationTypeForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('manage_violations')
-    else:
-        form = ViolationTypeForm()
-
-    return render(request, 'manage_violations.html', {'form': form, 'violations': violations})
-
-# Edit Violation
-def edit_violation(request, violation_id):
-    violation = ViolationType.objects.get(id=violation_id)
-    if request.method == 'POST':
-        form = ViolationTypeForm(request.POST, instance=violation)
-        if form.is_valid():
-            form.save()
-            return redirect('manage_violations')
-    else:
-        form = ViolationTypeForm(instance=violation)
-
-    return render(request, 'edit_violation.html', {'form': form, 'violation': violation})
-
-def reset(request):
-    return render(request, 'login/Reset Password.html')
-
-def resetconfirmation(request):
-    return render(request, 'login/Reset Password Confirmation.html')
-
-def forget(request):
-    return render(request, 'login/Forget Password.html')
-
-def change(request):
-    return render(request, 'login/ForceChange.html')
-
-def code(request):
-    return render(request, 'login/Enter Code.html')
-#------ studentmod ------
-def infopop(request):
-    return render(request, 'infopopup.html')
-
-def monitorrep(request):
-    return render(request, 'MonitorReport.html')
-
-def reportsumstud(request):
-    return render(request, 'studentmod/ReportSummaryStudent.html')
-
-def infopopup3(request):
-    return render(request, 'studentmod/infopopup3.html')
-
-#------- guard and instructor module ------
-def registration_success(request):
-    return render(request, 'registration_success.html')
-
-def report_success(request):
-    return render(request, 'report_success.html')
-
-def changepass(request):
-    return render(request,'Changepass.html')
-
-def violationreports(request):
-    # Fetch all dropdown options (programs)
-    programs = DropdownOption.objects.all()
-    
-    # Fetch all violation types
-    violations = ViolationType.objects.all()
-    
-    # Fetch all distinct sanctions (from ViolationType)
-    sanctions = ViolationType.objects.values_list('sanction', flat=True).distinct()
-
-    # Fetch the reports (apply filters based on the selected criteria if any)
-    reports = Report.objects.select_related('student', 'violation_type')
-
-    # Apply the filters based on request parameters
-    status_filter = request.GET.get('filter_status')
-    program_filter = request.GET.get('filter_program')
-    month_filter = request.GET.get('filter_date')
-    violation_filter = request.GET.get('filter_violation')
-    sanction_filter = request.GET.get('filter_sanction')
-
-    if status_filter:
-        reports = reports.filter(status=status_filter)
-        
-    if program_filter:
-        reports = reports.filter(student__program1_id=program_filter)
-
-    if month_filter:
-        year, month = map(int, month_filter.split('-'))
-        start_date = datetime.date(year, month, 1)
-        end_date = datetime.date(year, month, 1) + datetime.timedelta(days=32)
-        end_date = end_date.replace(day=1) - datetime.timedelta(days=1)
-        reports = reports.filter(incident_date__range=(start_date, end_date))
-
-    if violation_filter:
-        reports = reports.filter(violation_type__name=violation_filter)
-
-    if sanction_filter:
-        reports = reports.filter(violation_type__sanction=sanction_filter)
-
-    # Pass the necessary data to the template
-    context = {
-        'reports': reports,
-        'programs': programs,
-        'violations': violations,
-        'sanctions': sanctions,
-        'request': request,  # Pass the request object to the template
-    }
-
-    return render(request, 'violationreports.html', context)
-
-def update_status(request, report_id):
-    if request.method == 'POST':
-        # Get the report object
-        report = get_object_or_404(Report, id=report_id)
-        
-        # Get the new status from the form
-        new_status = request.POST.get('status')
-        
-        # Update the report status
-        report.status = new_status
-        report.save()
-        
-        # Redirect back to the reports page
-        return redirect('violationreports')
-    
-    return HttpResponse("Invalid request", status=400)
-
-def account_approval(request):
-    return render(request, "account_approval.html")

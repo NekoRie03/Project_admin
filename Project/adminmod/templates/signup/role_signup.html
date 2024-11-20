@@ -1,0 +1,25 @@
+<!-- templates/signup/role_signup.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Role Signup (Admin or Guard)</title>
+</head>
+<body>
+    <h2>Role Signup</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        
+        <!-- Role selection dropdown -->
+        <label for="role">Select Role:</label>
+        <select name="role" id="role">
+            <option value="ADMIN">Admin</option>
+            <option value="GUARD">Guard</option>
+        </select>
+        
+        <button type="submit">Sign Up</button>
+    </form>
+    <p>Already have an account? <a href= % login % >Login here</a>.</p>
+</body>
+</html>

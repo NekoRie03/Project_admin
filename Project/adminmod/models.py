@@ -1,29 +1,34 @@
 from django.db import models
-from django.utils import timezone
-from django.contrib.auth.hashers import make_password
-
-#Multiuser
-#"""
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
+from django.urls import reverse
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)
-    username = models.CharField(max_length=150, unique=True, null=True, blank=True)
+    username = models.CharField(max_length=150, unique=True)
+    first_name = models.CharField(max_length=30, blank=True, default="")
+    last_name = models.CharField(max_length=30, blank=True, default="")
+
     class Role(models.TextChoices):
         ADMIN = "ADMIN", "Admin"
         STUDENT = "STUDENT", "Student"
         GUARD = "GUARD", "Guard"
 
-    base_role = Role.ADMIN
-
-    role = models.CharField(max_length=50, choices=Role.choices, default='student')
+    role = models.CharField(max_length=50, choices=Role.choices, default=Role.STUDENT)
 
     def save(self, *args, **kwargs):
-        if not self.pk:
-            self.role = self.base_role
-            return super().save(*args, **kwargs)
+        if not self.pk:  # Only set email when creating a new user
+            self.email = self.format_email()
+        super().save(*args, **kwargs)
+
+    def format_email(self):
+        # Default email formatting logic based on role
+        first_name = self.first_name.lower()
+        last_name = self.last_name.lower()
+        role_suffix = self.role.lower()
+        return f"{first_name}.{last_name}_{role_suffix}@example.com"
 
 class StudentManager(BaseUserManager):
     def get_queryset(self, *args, **kwargs):
@@ -31,9 +36,7 @@ class StudentManager(BaseUserManager):
         return results.filter(role=User.Role.STUDENT)
 
 class Student(User):
-
     base_role = User.Role.STUDENT
-
     student = StudentManager()
 
     class Meta:
@@ -57,9 +60,7 @@ class GuardManager(BaseUserManager):
         return results.filter(role=User.Role.GUARD)
 
 class Guard(User):
-
     base_role = User.Role.GUARD
-
     guard = GuardManager()
 
     class Meta:
@@ -76,97 +77,43 @@ class GuardProfile(models.Model):
 def create_user_profile(sender, instance, created, **kwargs):
     if created and instance.role == "GUARD":
         GuardProfile.objects.create(user=instance)
-#"""
-#end mulitiuser
 
-class DropdownOption(models.Model):
-    program1 = models.CharField(max_length=255, default='Default Program')
-
-    def __str__(self):
-        return self.program1
-
-class Course(models.Model):
-    program = models.ForeignKey(DropdownOption, on_delete=models.CASCADE)
-    course_name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.course_name
-
-
-class Section(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    section_name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.section_name
-
-class Signup(models.Model):
-    first_name = models.CharField(max_length=50, verbose_name='First Name')
-    middle_initial = models.CharField(max_length=1, null=True, blank=True, verbose_name='Middle Initial')
-    last_name = models.CharField(max_length=50, verbose_name='Last Name')
-    idnumber = models.CharField(max_length=20, unique=True, verbose_name='ID Number')
-    email = models.EmailField(unique=True, verbose_name='Email')
-    password = models.CharField(max_length=8, verbose_name='Password')
-    confirmpass = models.CharField(max_length=8, verbose_name='Confirm Password')
-    program1 = models.ForeignKey(DropdownOption, on_delete=models.CASCADE, null=True)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True)
-    section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
-    id_picture = models.FileField(upload_to='id_pictures/', verbose_name='ID Picture')
-    registration_cert = models.FileField(upload_to='registration_certs/', verbose_name='Certificate of Registration (COR)')
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def save(self, *args, **kwargs):
-        # Ensure that we are storing the plain-text password as entered
-        # Don't use set_password or hash the password here
-        super(Signup, self).save(*args, **kwargs)
-    def __str__(self):
-        return f"{self.first_name} {self.last_name}"
-
-# Violation Models
-class ViolationType(models.Model):
-    VIOLATION_TYPE_CHOICES = [
-        ('Minor', 'Minor'),
-        ('Major', 'Major'),
-    ]
-    name = models.CharField(max_length=255)
-    violation_type = models.CharField(max_length=10, choices=VIOLATION_TYPE_CHOICES)
-    description = models.TextField()
-    guidelines = models.TextField()
-    sanction = models.CharField(max_length=255, null=True, blank=True)  
-    sanction_period_value = models.IntegerField()
-    sanction_period_type = models.CharField(max_length=10, choices=[('Hours', 'Hours'), ('Day', 'Day'), ('Week', 'Week'), ('Month', 'Month')])
-
-    def __str__(self):
-        return self.name
-
-class Report(models.Model):
-    STATUS_TYPE_CHOICES = [
-        ('On Hold', 'On Hold'),
-        ('Active', 'Active'),
-        ('Resolved', 'Resolved'),
-        ('Deny', 'Deny'),
-    ]
-    student = models.ForeignKey(Signup, on_delete=models.CASCADE)
-    incident_date = models.DateField()
-    violation_type = models.ForeignKey(ViolationType, on_delete=models.CASCADE)
-    status = models.CharField(max_length=10, choices=STATUS_TYPE_CHOICES, default='On Hold')
-
-    def __str__(self):
-        return f"Report for {self.student.first_name} {self.student.last_name}"
-
-class Userrole(models.Model):
-    USER_CHOICES = [
-        ('GUARD', 'GUARD'),
-        ('INSTRUCTOR', 'INSTRUCTOR'),
-        ('ADMIN', 'ADMIN')
-    ]
-    employee_id = models.CharField(max_length=20, unique=True)
-    first_name = models.CharField(max_length=50, default='', null=True)
-    middle_initial = models.CharField(max_length=1, blank=True, null=True, default='')
-    last_name = models.CharField(max_length=50, default='', null=True)
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=100)
-    position = models.CharField(max_length=10, choices=USER_CHOICES)
+class StudentRegistration(models.Model):
+    STATUS_CHOICES = (
+        (None, 'Pending Review'),
+        (True, 'Approved'),
+        (False, 'Declined'),
+    )
     
+    is_approved = models.BooleanField(null=True, default=None, choices=STATUS_CHOICES)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    cor_image = models.ImageField(upload_to='student_documents/cor/', null=True, blank=True)
+    id_image = models.ImageField(upload_to='student_documents/id/', null=True, blank=True)
+    is_approved = models.BooleanField(null=True, default=None)
+    review_comments = models.TextField(null=True, blank=True)
+    registration_date = models.DateTimeField(default=timezone.now)
+    review_date = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
-        return f"{self.first_name} {self.middle_initial or ''} {self.last_name}".strip()
+        user_name = self.user.get_full_name() if self.user else "Unknown User"
+        status = "Approved" if self.is_approved else ("Pending" if self.is_approved is None else "Declined")
+        return f"Registration for {user_name} - {status}"
+
+    def approve_registration(self, comments=None):
+        self.is_approved = True
+        self.review_comments = comments
+        self.review_date = timezone.now()
+        self.save()
+
+    def decline_registration(self, comments=None):
+        self.is_approved = False
+        self.review_comments = comments
+        self.review_date = timezone.now()
+        self.save()
+
+    def get_absolute_url(self):
+        return reverse('admin:adminmod_studentregistration_detail', args=[self.pk])
+
+    class Meta:
+        verbose_name = "Student Registration"
+        verbose_name_plural = "Student Registrations"

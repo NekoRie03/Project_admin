@@ -2,50 +2,28 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
+from django.contrib import admin
+from .views import admin_logout_view
+
+admin.site.site_url = None  # This removes the "View Site" link
+admin.site.logout = admin_logout_view  # This overrides the default admin logout
 
 urlpatterns = [
-    #dashboard
-    path('dashboard/', views.dashboard, name='dashboard'),
-    
-    #issue_status
-    path('DenyReport/', views.DenyReport, name='DenyReport'),
-    #path('ProbationProgress/', views.ProbationProgress, name='ProbationProgress'),
-    path('monitorreport/', views.monitorrep, name='monitorreport'),
-
-    #user_role
-    path('retry-password/', views.retry_password, name='retry_password'),
-
     #login
-    path('', views.login_view, name='login'),
-    path('signup/', views.signup, name='signup'),
-    path('reset/', views.reset, name='reset'),
-    path('resetconfirmation/', views.resetconfirmation, name='resetconfirmation'),
-    path('forget/', views.forget, name='forget'),
-    path('change/', views.change, name='change'),
-    path('code/', views.code, name='code'),
-
-    #student mod
-    path('studentsettings/'   , views.update_password, name='studentsettings'),
-    path('studentstatus/'     , views.student_status, name='studentstatus'),
-
-    #guard and instructor mod
-    path('manage-violations/', views.manage_violations, name='manage_violations'),
-    path('edit-violation/<int:violation_id>/', views.edit_violation, name='edit_violation'),  
-    path('report-success/', views.report_success, name='report_success'),
-    path('report-summary/', views.report_summary, name='report_summary'),
-    path('manage_dropdown/', views.manage_dropdown, name='manage_dropdown'),
-    path('registration_success/', views.registration_success, name='registration_success'),
-    path('file-report/', views.file_report, name='file_report'),
-    path('changepass/', views.changepass, name='changepass'),
-    path('violationreports/', views.violationreports, name='violationreports'),
-    path('update_status/<int:report_id>/', views.update_status, name='update_status'),
-    path('report_summary2/', views.report_summary2, name='report_summary2'), 
-    path('account_approval/', views.account_approval, name='account_approval'),
-    path('adduser/', views.adduser, name='adduser'),
-    path('userrole/', views.userrole, name='userrole'),
-    path('edituserrole/', views.edituserrole, name='edituserrole'),
-    path("useraccount/",views.useraccount, name="useraccount"),
-    ]
+    path('login/', views.login_view, name='login'),
+    path('student/profile/', views.student_profile, name='student_profile'),
+    path('guard/dashboard/', views.guard_dashboard, name='guard_dashboard'),
+    
+    #signup
+    path('signup/role/', views.role_signup, name='role_signup'),
+    path('signup/student/', views.student_signup, name='student_signup'),
+    path('pending_review/', views.pending_review, name='pending_review'),
+    path('signup/success/', views.registration_success, name='registration_success'),
+    path('approve_registration/<int:user_id>/', views.approve_registration, name='approve_registration'),
+    
+    #logout
+    path('logout/', views.logout_view, name='logout'),
+]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

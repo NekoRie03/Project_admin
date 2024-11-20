@@ -1,0 +1,10 @@
+<!-- templates/student/profile.html -->
+{% extends 'base.html' %}  <!-- If you're using a base template -->
+
+{% block content %}
+<div>
+    <h1>Student Profile</h1>
+    <p>Welcome, {{ request.user.get_full_name }}</p>
+    <!-- Add your profile content here -->
+</div>
+{% endblock %}
