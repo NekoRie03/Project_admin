@@ -137,6 +137,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #MULTIUSER user in model
 
 AUTH_USER_MODEL = "adminmod.User"
+
+LOGOUT_REDIRECT_URL = '/authenticate/login/'
 '''
 AUTHENTICATION_BACKENDS = [
     'adminmod.backends.CustomAuthenticationBackend',

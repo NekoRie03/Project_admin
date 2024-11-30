@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
-from .models import User, StudentRegistration, Program, Section, Violation, Sanction
+from .models import User, StudentRegistration, Program, Section, Violation, Sanction, ViolationRecord
 from .forms import StudentRegistrationAdminForm, StaffSignupForm
 
 
@@ -408,3 +408,9 @@ class CustomUserAdmin(admin.ModelAdmin):
         if not obj:
             return list(self.add_fieldsets[0][1]['fields'])
         return super().get_fields(request, obj)
+    
+@admin.register(ViolationRecord)
+class ViolationRecordAdmin(admin.ModelAdmin):
+    list_display = ('student', 'violation', 'recorded_by', 'recorded_at')
+    search_fields = ('student__username', 'student__first_name', 'student__last_name', 'violation__name')
+    list_filter = ('recorded_at', 'violation__severity')

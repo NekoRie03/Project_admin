@@ -367,3 +367,43 @@ class SanctionForm(forms.ModelForm):
             raise ValidationError("Duration value must be a positive number.")
         
         return cleaned_data
+    
+class LoginForm(forms.Form):
+    username = forms.CharField(
+        max_length=150, 
+        widget=forms.TextInput(attrs={
+            'class': 'form-control', 
+            'placeholder': 'Username'
+        })
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control', 
+            'placeholder': 'Password'
+        })
+    )
+
+    def clean(self):
+        username = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+
+        if username and password:
+            user = authenticate(username=username, password=password)
+            if not user:
+                raise ValidationError("Invalid username or password")
+            
+            # Additional checks for user status
+            if not user.is_active:
+                raise ValidationError("Your account is not active")
+            
+            # For students, check registration approval
+            if user.role == user.Role.STUDENT:
+                try:
+                    registration = user.studentregistration
+                    if registration.is_approved is not True:
+                        raise ValidationError("Your student registration is not yet approved")
+                except: 
+                    raise ValidationError("Student registration not found")
+            
+            self.cleaned_data['user'] = user
+        return self.cleaned_data

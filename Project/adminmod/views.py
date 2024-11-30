@@ -1,15 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import get_user_model
-from .forms import AdminSignupForm, GuardSignupForm, StudentSignupForm, StudentRegistrationForm  # Create these forms as needed
-from .models import StudentRegistration, User
-from django.contrib.auth import login, authenticate
+from .forms import AdminSignupForm, GuardSignupForm, StudentSignupForm, StudentRegistrationForm, LoginForm 
+from .models import StudentRegistration, User,  Violation, ViolationRecord
+from django.contrib.auth import login
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.urls import reverse
 from django.contrib.auth import logout
-from django.views.decorators.csrf import ensure_csrf_cookie
-from django.middleware.csrf import get_token
 
 User = get_user_model()
 
@@ -109,3 +107,60 @@ def registration_success(request):
 def pending_review(request):
     return render(request, 'signup/pending_review.html')
 
+def user_login(request):
+    if request.user.is_authenticated:
+        return redirect_user_after_login(request.user)
+    
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            user = form.cleaned_data.get('user')
+            login(request, user)
+            return redirect_user_after_login(user)
+    else:
+        form = LoginForm()
+    
+    return render(request, 'authentication/login.html', {'form': form})
+
+def user_logout(request):
+    logout(request)
+    return redirect('login')
+
+def redirect_user_after_login(user):
+    """
+    Redirect users to appropriate dashboard based on their role
+    """
+    if user.role == user.Role.STUDENT:
+        return redirect(reverse('student_dashboard'))
+    elif user.role == user.Role.GUARD:
+        return redirect(reverse('guard_dashboard'))
+    elif user.role == user.Role.ADMIN:
+        return redirect('/admin/')
+    else:
+        return redirect('login')  # Default fallback
+
+def student_dashboard(request):
+    violations = ViolationRecord.objects.filter(student=request.user)
+    violation_count = violations.count()
+    return render(request, 'student/dashboard.html', {'violations': violations, 'violation_count': violation_count})
+
+
+def guard_dashboard(request):
+    students = User.objects.filter(role=User.Role.STUDENT, studentregistration__is_approved=True)
+    violations = Violation.objects.all()
+
+    if request.method == "POST":
+        student_id = request.POST.get('student_id')
+        violation_id = request.POST.get('violation_id')
+        student = get_object_or_404(User, id=student_id)
+        violation = get_object_or_404(Violation, id=violation_id)
+
+        ViolationRecord.objects.create(
+            student=student,
+            violation=violation,
+            recorded_by=request.user
+        )
+        message = "Violation recorded successfully!"
+        return render(request, 'guard/dashboard.html', {'students': students, 'violations': violations, 'message': message})
+
+    return render(request, 'guard/dashboard.html', {'students': students, 'violations': violations})

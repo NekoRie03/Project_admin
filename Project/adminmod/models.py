@@ -11,6 +11,7 @@ class User(AbstractUser):
     username = models.CharField(max_length=150, unique=True)
     first_name = models.CharField(max_length=30, blank=True, default="")
     last_name = models.CharField(max_length=30, blank=True, default="")
+    force_password_change = models.BooleanField(default=False)
 
     class Role(models.TextChoices):
         ADMIN = "ADMIN", "Admin"
@@ -75,6 +76,9 @@ class StudentRegistration(models.Model):
         self.review_comments = comments
         self.review_date = timezone.now()
         self.save()
+        # Force password change for the associated user
+        self.user.force_password_change = True
+        self.user.save()
 
     def decline_registration(self, comments=None):
         self.is_approved = False
@@ -230,3 +234,12 @@ class Sanction(models.Model):
         verbose_name_plural = "Sanctions"
         unique_together = ['violation', 'name']
         ordering = ['violation', 'name']
+        
+class ViolationRecord(models.Model):
+    student = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'STUDENT'})
+    violation = models.ForeignKey(Violation, on_delete=models.CASCADE)
+    recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='recorded_violations')
+    recorded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.student.get_full_name()} - {self.violation.name}"
