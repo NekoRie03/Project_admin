@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.forms import ValidationError
 from django.utils import timezone
 from django.urls import reverse
 
@@ -18,17 +19,75 @@ class User(AbstractUser):
 
     role = models.CharField(max_length=50, choices=Role.choices, default=Role.STUDENT)
 
-    def save(self, *args, **kwargs):
-        if not self.pk:  # Only set email when creating a new user
-            self.email = self.format_email()
-        super().save(*args, **kwargs)
+class Program(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    code = models.CharField(max_length=20, unique=True)
+    description = models.TextField(blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+    
+    class Meta:
+        verbose_name = "Program"
+        verbose_name_plural = "Programs"
+        ordering = ['name']
 
-    def format_email(self):
-        # Default email formatting logic based on role
-        first_name = self.first_name.lower()
-        last_name = self.last_name.lower()
-        role_suffix = self.role.lower()
-        return f"{first_name}.{last_name}_{role_suffix}@example.com"
+class Section(models.Model):
+    name = models.CharField(max_length=50)
+    program = models.ForeignKey(Program, on_delete=models.CASCADE, related_name='sections')
+    
+    def __str__(self):
+        return f"{self.name} - {self.program.name}"
+    
+    class Meta:
+        verbose_name = "Section"
+        verbose_name_plural = "Sections"
+        unique_together = ['name', 'program']
+        ordering = ['program', 'name']
+
+class StudentRegistration(models.Model):
+    STATUS_CHOICES = (
+        (None, 'Pending Review'),
+        (True, 'Approved'),
+        (False, 'Declined'),
+    )
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    is_approved = models.BooleanField(null=True, default=None, choices=STATUS_CHOICES)
+    
+    # New fields for Program and Section
+    program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True)
+    section = models.ForeignKey(Section, on_delete=models.SET_NULL, null=True)
+    
+    cor_image = models.ImageField(upload_to='student_documents/cor/', null=True, blank=True)
+    id_image = models.ImageField(upload_to='student_documents/id/', null=True, blank=True)
+    
+    review_comments = models.TextField(null=True, blank=True)
+    registration_date = models.DateTimeField(default=timezone.now)
+    review_date = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        user_name = self.user.get_full_name() if self.user else "Unknown User"
+        status = "Approved" if self.is_approved else ("Pending" if self.is_approved is None else "Declined")
+        return f"Registration for {user_name} - {status}"
+    def approve_registration(self, comments=None):
+        self.is_approved = True
+        self.review_comments = comments
+        self.review_date = timezone.now()
+        self.save()
+
+    def decline_registration(self, comments=None):
+        self.is_approved = False
+        self.review_comments = comments
+        self.review_date = timezone.now()
+        self.save()
+
+    def get_absolute_url(self):
+        return reverse('admin:adminmod_studentregistration_detail', args=[self.pk])
+
+    class Meta:
+        verbose_name = "Student Registration"
+        verbose_name_plural = "Student Registrations"
 
 class StudentManager(BaseUserManager):
     def get_queryset(self, *args, **kwargs):
@@ -47,12 +106,32 @@ class Student(User):
 
 @receiver(post_save, sender=Student)
 def create_user_profile(sender, instance, created, **kwargs):
-    if created and instance.role == "STUDENT":
+    if created and instance.role == "STUDENT" and instance.is_approved:
         StudentProfile.objects.create(user=instance)
+@receiver(post_save, sender=StudentRegistration)
+def update_student_profile_approval(sender, instance, **kwargs):
+    # Update the associated StudentProfile's approval status
+    try:
+        student_profile = instance.user.studentprofile
+        student_profile.is_approved = instance.is_approved
+        student_profile.save()
+    except StudentProfile.DoesNotExist:
+        # Create a StudentProfile if it doesn't exist
+        StudentProfile.objects.create(
+            user=instance.user, 
+            is_approved=instance.is_approved
+        )
 
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     student_id = models.IntegerField(null=True, blank=True)
+    is_approved = models.BooleanField(null=True, default=None)  # Added is_approved field
+
+    def save(self, *args, **kwargs):
+        # Automatically set is_approved from StudentRegistration if exists
+        if hasattr(self.user, 'studentregistration'):
+            self.is_approved = self.user.studentregistration.is_approved
+        super().save(*args, **kwargs)
 
 class GuardManager(BaseUserManager):
     def get_queryset(self, *args, **kwargs):
@@ -78,42 +157,76 @@ def create_user_profile(sender, instance, created, **kwargs):
     if created and instance.role == "GUARD":
         GuardProfile.objects.create(user=instance)
 
-class StudentRegistration(models.Model):
-    STATUS_CHOICES = (
-        (None, 'Pending Review'),
-        (True, 'Approved'),
-        (False, 'Declined'),
+class Violation(models.Model):
+    SEVERITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('critical', 'Critical')
+    ]
+    
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
+    severity = models.CharField(max_length=20, choices=SEVERITY_CHOICES, default='medium')
+    
+    def __str__(self):
+        return f"{self.name} ({self.get_severity_display()})"
+    
+    class Meta:
+        verbose_name = "Violation"
+        verbose_name_plural = "Violations"
+        ordering = ['-severity', 'name']
+
+class Sanction(models.Model):
+    DURATION_UNITS = [
+        ('days', 'Days'),
+        ('weeks', 'Weeks'),
+        ('months', 'Months'),
+    ]
+    
+    violation = models.ForeignKey(Violation, on_delete=models.CASCADE, related_name='sanctions')
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+    duration_value = models.IntegerField(default=1)
+    duration_unit = models.CharField(
+        max_length=10, 
+        choices=DURATION_UNITS, 
+        default='days'
     )
     
-    is_approved = models.BooleanField(null=True, default=None, choices=STATUS_CHOICES)
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    cor_image = models.ImageField(upload_to='student_documents/cor/', null=True, blank=True)
-    id_image = models.ImageField(upload_to='student_documents/id/', null=True, blank=True)
-    is_approved = models.BooleanField(null=True, default=None)
-    review_comments = models.TextField(null=True, blank=True)
-    registration_date = models.DateTimeField(default=timezone.now)
-    review_date = models.DateTimeField(null=True, blank=True)
+    def __str__(self):
+        return f"{self.name} - {self.duration_value} {self.get_duration_unit_display()}"
+    
+    class Meta:
+        verbose_name = "Sanction"
+        verbose_name_plural = "Sanctions"
+        unique_together = ['violation', 'name']
+        ordering = ['violation', 'name']
+    DURATION_UNITS = [
+        ('days', 'Days'),
+        ('weeks', 'Weeks'),
+        ('months', 'Months'),
+    ]
+    violation = models.ForeignKey('Violation', on_delete=models.CASCADE, related_name='sanctions')
+    name = models.CharField(max_length=100)
+    duration_value = models.IntegerField(default=1)
+    duration_unit = models.CharField(
+        max_length=10, 
+        choices=DURATION_UNITS, 
+        default='days'
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+    
 
     def __str__(self):
-        user_name = self.user.get_full_name() if self.user else "Unknown User"
-        status = "Approved" if self.is_approved else ("Pending" if self.is_approved is None else "Declined")
-        return f"Registration for {user_name} - {status}"
+        return f"{self.name} - {self.duration_value} {self.get_duration_unit_display()}"
 
-    def approve_registration(self, comments=None):
-        self.is_approved = True
-        self.review_comments = comments
-        self.review_date = timezone.now()
-        self.save()
 
-    def decline_registration(self, comments=None):
-        self.is_approved = False
-        self.review_comments = comments
-        self.review_date = timezone.now()
-        self.save()
-
-    def get_absolute_url(self):
-        return reverse('admin:adminmod_studentregistration_detail', args=[self.pk])
-
+    def __str__(self):
+        return f"{self.duration_value} {self.get_duration_unit_display()}"
+    
     class Meta:
-        verbose_name = "Student Registration"
-        verbose_name_plural = "Student Registrations"
+        verbose_name = "Sanction"
+        verbose_name_plural = "Sanctions"
+        unique_together = ['violation', 'name']
+        ordering = ['violation', 'name']

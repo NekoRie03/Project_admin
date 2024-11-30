@@ -3,16 +3,9 @@ from django.conf import settings
 from django.conf.urls.static import static
 from . import views
 from django.contrib import admin
-from .views import admin_logout_view
-
-admin.site.site_url = None  # This removes the "View Site" link
-admin.site.logout = admin_logout_view  # This overrides the default admin logout
 
 urlpatterns = [
     #login
-    path('login/', views.login_view, name='login'),
-    path('student/profile/', views.student_profile, name='student_profile'),
-    path('guard/dashboard/', views.guard_dashboard, name='guard_dashboard'),
     
     #signup
     path('signup/role/', views.role_signup, name='role_signup'),
@@ -22,7 +15,6 @@ urlpatterns = [
     path('approve_registration/<int:user_id>/', views.approve_registration, name='approve_registration'),
     
     #logout
-    path('logout/', views.logout_view, name='logout'),
 ]
 
 if settings.DEBUG:

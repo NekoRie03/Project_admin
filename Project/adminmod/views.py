@@ -7,7 +7,6 @@ from django.contrib.auth import login, authenticate
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.urls import reverse
-from .decorators import approved_student_required, guard_required
 from django.contrib.auth import logout
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.middleware.csrf import get_token
@@ -109,89 +108,4 @@ def registration_success(request):
 
 def pending_review(request):
     return render(request, 'signup/pending_review.html')
-
-@ensure_csrf_cookie
-def login_view(request):
-    if request.user.is_authenticated:
-        if request.user.role == "STUDENT":
-            try:
-                registration = StudentRegistration.objects.get(user=request.user)
-                if registration.is_approved:
-                    return redirect('student_profile')
-                else:
-                    return redirect('pending_review')
-            except StudentRegistration.DoesNotExist:
-                pass
-        elif request.user.role == "ADMIN":
-            return redirect('admin:index')
-        elif request.user.role == "GUARD":
-            return redirect('guard_dashboard')
-    
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        
-        if not username or not password:
-            messages.error(request, 'Please provide both username and password.')
-            return render(request, 'login.html')
-        
-        user = authenticate(request, username=username, password=password)
-        
-        if user is not None:
-            login(request, user)
-            
-            if user.role == "STUDENT":
-                try:
-                    registration = StudentRegistration.objects.get(user=user)
-                    if registration.is_approved:
-                        next_url = request.GET.get('next')
-                        if next_url:
-                            return redirect(next_url)
-                        return redirect('student_profile')
-                    else:
-                        messages.warning(request, 'Your account is pending approval.')
-                        logout(request)
-                        return redirect('pending_review')
-                except StudentRegistration.DoesNotExist:
-                    messages.error(request, 'No registration found.')
-                    logout(request)
-                    return redirect('login')
-            elif user.role == "ADMIN":
-                return redirect('admin:index')
-            elif user.role == "GUARD":
-                return redirect('guard_dashboard')
-        else:
-            messages.error(request, 'Invalid username or password.')
-    
-    return render(request, 'login.html')
-
-@login_required
-@guard_required
-def guard_dashboard(request):
-    return render(request, 'guard/dashboard.html')
-
-@login_required
-@approved_student_required
-def student_profile(request):
-    try:
-        registration = StudentRegistration.objects.get(user=request.user)
-        context = {
-            'registration': registration,
-            'user': request.user
-        }
-        return render(request, 'student/profile.html', context)
-    except StudentRegistration.DoesNotExist:
-        messages.error(request, 'No registration found for this account.')
-        return redirect('login')
-
-@login_required
-def logout_view(request):
-    logout(request)
-    messages.success(request, 'You have been successfully logged out.')
-    return redirect('login')
-
-# For Django admin logout override
-def admin_logout_view(request):
-    logout(request)
-    return redirect('login')
 
