@@ -5,9 +5,9 @@ from .forms import AdminSignupForm, GuardSignupForm, StudentSignupForm, StudentR
 from .models import StudentRegistration, User,  Violation, ViolationRecord
 from django.contrib.auth import login
 from django.shortcuts import render, redirect
-from django.contrib import messages
 from django.urls import reverse
 from django.contrib.auth import logout
+from .decorators import unauthenticated_user, allowed_roles
 
 User = get_user_model()
 
@@ -107,10 +107,9 @@ def registration_success(request):
 def pending_review(request):
     return render(request, 'signup/pending_review.html')
 
+@unauthenticated_user
 def user_login(request):
-    if request.user.is_authenticated:
-        return redirect_user_after_login(request.user)
-    
+
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -139,12 +138,14 @@ def redirect_user_after_login(user):
     else:
         return redirect('login')  # Default fallback
 
+@allowed_roles([User.Role.STUDENT])
 def student_dashboard(request):
     violations = ViolationRecord.objects.filter(student=request.user)
     violation_count = violations.count()
     return render(request, 'student/dashboard.html', {'violations': violations, 'violation_count': violation_count})
 
 
+@allowed_roles([User.Role.GUARD])
 def guard_dashboard(request):
     students = User.objects.filter(role=User.Role.STUDENT, studentregistration__is_approved=True)
     violations = Violation.objects.all()

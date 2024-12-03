@@ -113,7 +113,6 @@ class GuardSignupForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.role = User.Role.GUARD
-        user.is_staff = True
         
         if commit:
             user.save()
@@ -294,7 +293,7 @@ class StaffSignupForm(UserCreationForm):
         user.role = self.cleaned_data['role']
         
         # Set staff status based on role
-        if user.role in [User.Role.ADMIN, User.Role.GUARD]:
+        if user.role in [User.Role.ADMIN]:
             user.is_staff = True
         
         # Set superuser only for admin

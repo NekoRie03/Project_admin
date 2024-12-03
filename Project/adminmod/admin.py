@@ -7,11 +7,11 @@ from django.urls import reverse
 from .models import User, StudentRegistration, Program, Section, Violation, Sanction, ViolationRecord
 from .forms import StudentRegistrationAdminForm, StaffSignupForm
 
-
 # Set Admin Header
 admin.site.site_header = "Student Violation System Administration"
 admin.site.site_title = "Student Violation System Admin Portal"
 admin.site.index_title = "Welcome to Student Violation System Portal"
+
 
 
 class LogUtils:
@@ -369,8 +369,15 @@ class SanctionAdmin(admin.ModelAdmin):
     
 @admin.register(User)
 class CustomUserAdmin(admin.ModelAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_staff')
-    # Add this method to filter out students
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Personal Info', {'fields': ('first_name', 'last_name', 'email')}),
+        ('Important dates', {'fields': ('last_login', 'date_joined')}),
+        # Add any custom fields from your User model
+        ('Additional Information', {'fields': ('role',)}),
+    )
+    
+    list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_staff', )
     def get_queryset(self, request):
         return super().get_queryset(request).exclude(role=User.Role.STUDENT)
     
@@ -408,7 +415,6 @@ class CustomUserAdmin(admin.ModelAdmin):
         if not obj:
             return list(self.add_fieldsets[0][1]['fields'])
         return super().get_fields(request, obj)
-    
 @admin.register(ViolationRecord)
 class ViolationRecordAdmin(admin.ModelAdmin):
     list_display = ('student', 'violation', 'recorded_by', 'recorded_at')
