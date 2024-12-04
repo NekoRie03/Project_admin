@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 from .models import User, StudentRegistration, Program, Section, Violation, Sanction
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
+from django.contrib.auth.forms import PasswordChangeForm
+
 
 
 User = get_user_model()
@@ -113,6 +115,7 @@ class GuardSignupForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.role = User.Role.GUARD
+        user.is_staff = True
         
         if commit:
             user.save()
@@ -293,7 +296,7 @@ class StaffSignupForm(UserCreationForm):
         user.role = self.cleaned_data['role']
         
         # Set staff status based on role
-        if user.role in [User.Role.ADMIN]:
+        if user.role in [User.Role.ADMIN, User.Role.GUARD]:
             user.is_staff = True
         
         # Set superuser only for admin
@@ -406,3 +409,45 @@ class LoginForm(forms.Form):
             
             self.cleaned_data['user'] = user
         return self.cleaned_data
+    
+class CustomPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(
+        label="Current Password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control', 
+            'placeholder': 'Current Password'
+        })
+    )
+    new_password1 = forms.CharField(
+        label="New Password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control', 
+            'placeholder': 'New Password'
+        })
+    )
+    new_password2 = forms.CharField(
+        label="Confirm New Password",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control', 
+            'placeholder': 'Confirm New Password'
+        })
+    )
+
+    def clean_old_password(self):
+        old_password = self.cleaned_data["old_password"]
+        if not self.user.check_password(old_password):
+            raise ValidationError(
+                "Your old password was entered incorrectly. Please enter it again."
+            )
+        return old_password
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password1 = cleaned_data.get("new_password1")
+        new_password2 = cleaned_data.get("new_password2")
+
+        # Additional custom password validation can be added here
+        if new_password1 and new_password2 and new_password1 == self.cleaned_data.get('old_password'):
+            raise ValidationError("New password must be different from the current password.")
+
+        return cleaned_data

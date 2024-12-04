@@ -2,7 +2,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 from . import views
-from .views import user_login, user_logout
+from .views import user_login, user_logout, guard_change_password, student_change_password
 
 urlpatterns = [
     #login
@@ -10,7 +10,7 @@ urlpatterns = [
     path('logout/', user_logout, name='logout'),
     path('authenticate/login/', user_login, name='login'),
     #dashboard
-    path('guard_dashboard/', views.guard_dashboard, name='guard_dashboard'),
+    path('guard/guard_dashboard/', views.guard_dashboard, name='guard_dashboard'),
     path('student_dashboard/', views.student_dashboard, name='student_dashboard'),
     #signup
     path('signup/role/', views.role_signup, name='role_signup'),
@@ -18,6 +18,9 @@ urlpatterns = [
     path('pending_review/', views.pending_review, name='pending_review'),
     path('signup/success/', views.registration_success, name='registration_success'),
     path('approve_registration/<int:user_id>/', views.approve_registration, name='approve_registration'),
+    #chang pass
+    path('guard/change-password/', guard_change_password, name='guard_change_password'),
+    path('student/change-password/', student_change_password, name='student_change_password'),
 ]
 
 if settings.DEBUG:

@@ -1,13 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import get_user_model
-from .forms import AdminSignupForm, GuardSignupForm, StudentSignupForm, StudentRegistrationForm, LoginForm 
+from .forms import AdminSignupForm, CustomPasswordChangeForm, GuardSignupForm, StudentSignupForm, StudentRegistrationForm, LoginForm 
 from .models import StudentRegistration, User,  Violation, ViolationRecord
 from django.contrib.auth import login
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from django.contrib.auth import logout
 from .decorators import unauthenticated_user, allowed_roles
+from django.contrib.auth import update_session_auth_hash
+from django.contrib import messages
 
 User = get_user_model()
 
@@ -165,3 +167,56 @@ def guard_dashboard(request):
         return render(request, 'guard/dashboard.html', {'students': students, 'violations': violations, 'message': message})
 
     return render(request, 'guard/dashboard.html', {'students': students, 'violations': violations})
+
+
+@allowed_roles([User.Role.GUARD])
+def guard_change_password(request):
+    # Ensure only guards can access this view
+    if request.user.role != User.Role.GUARD:
+        messages.error(request, 'Unauthorized access')
+        return redirect('login')  # or appropriate redirect
+
+    if request.method == 'POST':
+        form = CustomPasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Update the session to prevent logout
+            update_session_auth_hash(request, user)
+            
+            # Reset force_password_change if it was set
+            user.force_password_change = False
+            user.save()
+            
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('guard_dashboard')  # Redirect to guard dashboard
+    else:
+        form = CustomPasswordChangeForm(request.user)
+    return render(request, 'guard/change-password.html', {
+    'form': form
+    })
+    
+@allowed_roles([User.Role.STUDENT])
+def student_change_password(request):
+    # Ensure only students can access this view
+    if request.user.role != User.Role.STUDENT:
+        messages.error(request, 'Unauthorized access')
+        return redirect('login')  # or appropriate redirect
+
+    if request.method == 'POST':
+        form = CustomPasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            # Update the session to prevent logout
+            update_session_auth_hash(request, user)
+            
+            # Reset force_password_change if it was set
+            user.force_password_change = False
+            user.save()
+            
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('student_dashboard')  # Corrected redirect
+    else:
+        form = CustomPasswordChangeForm(request.user)
+    return render(request, 'student/change-password.html', {
+    'form': form
+    })
