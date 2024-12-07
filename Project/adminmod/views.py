@@ -10,7 +10,6 @@ from django.contrib.auth import logout
 from .decorators import unauthenticated_user, allowed_roles
 from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
-
 User = get_user_model()
 
 def student_signup(request):
