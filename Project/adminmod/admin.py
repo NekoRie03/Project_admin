@@ -6,13 +6,13 @@ from django.utils.html import format_html
 from django.urls import reverse
 from .models import User, StudentRegistration, Program, Section, Violation, Sanction, ViolationRecord
 from .forms import StudentRegistrationAdminForm, StaffSignupForm
+from django.contrib.auth.models import Group
 
 # Set Admin Header
 admin.site.site_header = "Student Violation System Administration"
 admin.site.site_title = "Student Violation System Admin Portal"
 admin.site.index_title = "Welcome to Student Violation System Portal"
-
-
+admin.site.unregister(Group)
 
 class LogUtils:
     @staticmethod
@@ -415,8 +415,22 @@ class CustomUserAdmin(admin.ModelAdmin):
         if not obj:
             return list(self.add_fieldsets[0][1]['fields'])
         return super().get_fields(request, obj)
+    
 @admin.register(ViolationRecord)
 class ViolationRecordAdmin(admin.ModelAdmin):
-    list_display = ('student', 'violation', 'recorded_by', 'recorded_at')
-    search_fields = ('student__username', 'student__first_name', 'student__last_name', 'violation__name')
-    list_filter = ('recorded_at', 'violation__severity')
+    list_display = ('student', 'violation', 'sanction', 'recorded_by', 'recorded_at')
+    search_fields = (
+        'student__username', 
+        'student__first_name', 
+        'student__last_name', 
+        'violation__name',
+        'sanction__name'
+    )
+    list_filter = ('recorded_at', 'violation__severity', 'sanction')
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "sanction":
+            # If a violation is selected, filter sanctions by that violation
+            if 'violation' in request.GET:
+                kwargs["queryset"] = Sanction.objects.filter(violation_id=request.GET['violation'])
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)

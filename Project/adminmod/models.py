@@ -238,8 +238,10 @@ class Sanction(models.Model):
 class ViolationRecord(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'STUDENT'})
     violation = models.ForeignKey(Violation, on_delete=models.CASCADE)
+    sanction = models.ForeignKey(Sanction, on_delete=models.SET_NULL, null=True, blank=True)
     recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='recorded_violations')
     recorded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.student.get_full_name()} - {self.violation.name}"
+        sanction_info = f" - {self.sanction}" if self.sanction else ""
+        return f"{self.student.get_full_name()} - {self.violation.name}{sanction_info}"
