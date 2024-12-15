@@ -31,6 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'unfold',
+    'unfold.contrib.import_export',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'adminmod',
+    'import_export'
 ]
 
 MIDDLEWARE = [
@@ -149,3 +152,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'studentviolationsystem.notifs.gmail.com'
 EMAIL_HOST_PASSWORD = ''
+
+"""JAZZMIN_SETTINGS = {
+    "show_ui_builder" : True
+}"""

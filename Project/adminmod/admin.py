@@ -7,6 +7,16 @@ from django.urls import reverse
 from .models import User, StudentRegistration, Program, Section, Violation, Sanction, ViolationRecord
 from .forms import StudentRegistrationAdminForm, StaffSignupForm
 from django.contrib.auth.models import Group
+from django.forms import TextInput, EmailInput, PasswordInput
+from import_export.admin import ImportExportModelAdmin
+from import_export.admin import ExportMixin
+from unfold.contrib.import_export.forms import ExportForm, ImportForm, SelectableFieldsExportForm
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.admin import register
+from django.contrib.auth.models import User
+
+from unfold.admin import ModelAdmin
+from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
 
 # Set Admin Header
 admin.site.site_header = "Student Violation System Administration"
@@ -29,7 +39,7 @@ class LogUtils:
             content_type_id=ContentType.objects.get_for_model(obj).id,
             object_id=obj.id,
             object_repr=str(obj),
-            action_flag=CHANGE,
+            action_flag = CHANGE,
             change_message=action
         )
 
@@ -53,7 +63,7 @@ class ApprovalStatusFilter(admin.SimpleListFilter):
             return queryset.filter(is_approved=None)
 
 @admin.register(StudentRegistration)
-class StudentRegistrationAdmin(admin.ModelAdmin):
+class StudentRegistrationAdmin(ExportMixin, admin.ModelAdmin):
     list_per_page = 50
     list_max_show_all = 500
     form = StudentRegistrationAdminForm
@@ -95,7 +105,7 @@ class StudentRegistrationAdmin(admin.ModelAdmin):
         
         class CustomForm(form):
             def __init__(self, *args, **kwargs):
-                kwargs['current_user'] = request.user
+                self.current_user = kwargs.pop('current_user', None)
                 super().__init__(*args, **kwargs)
         
         return CustomForm
@@ -153,13 +163,14 @@ class StudentRegistrationAdmin(admin.ModelAdmin):
 
     def actions_buttons(self, obj):
         if obj.is_approved is None:
-            approve_url = f"{reverse('admin:adminmod_studentregistration_change', args=[obj.pk])}?action=approve"
-            reject_url = f"{reverse('admin:adminmod_studentregistration_change', args=[obj.pk])}?action=reject"
+            approve_url = reverse('admin:adminmod_studentregistration_change', args=[obj.pk]) + '?action=approve'
+            reject_url = reverse('admin:adminmod_studentregistration_change', args=[obj.pk]) + '?action=reject'
             return format_html(
                 '<a class="button" href="{}" style="background-color: #4CAF50; color: white; margin-right: 5px;">Approve</a>'
                 '<a class="button" href="{}" style="background-color: #f44336; color: white;">Reject</a>',
                 approve_url, reject_url
             )
+
         return "Processed"
     actions_buttons.short_description = 'Actions'
 
@@ -185,15 +196,13 @@ class StudentRegistrationAdmin(admin.ModelAdmin):
 
     def _bulk_update_status(self, request, queryset, status, action_text):
         try:
+            queryset.update(is_approved=status, review_date=timezone.now())  # Update all at once
             for obj in queryset:
-                if status:
-                    obj.approve_registration(f'Approved in bulk action')
-                else:
-                    obj.decline_registration(f'Rejected in bulk action')
                 LogUtils.create_log_entry(request.user, obj, f'Registration {action_text} in bulk')
             self.message_user(request, f"{queryset.count()} registrations have been {action_text}.")
         except Exception as e:
             self.message_user(request, f"An error occurred: {str(e)}", level='error')
+
         
     def approve_selected(self, request, queryset):
         self._bulk_update_status(request, queryset, True, 'approved')
@@ -267,9 +276,10 @@ class StudentRegistrationAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+    export_form_class = ExportForm
 
 @admin.register(Program)
-class ProgramAdmin(admin.ModelAdmin):
+class ProgramAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ('name', 'code', 'section_count')
     search_fields = ('name', 'code')
     list_filter = ('name',)
@@ -277,9 +287,11 @@ class ProgramAdmin(admin.ModelAdmin):
     def section_count(self, obj):
         return obj.sections.count()
     section_count.short_description = 'Number of Sections'
+    import_form_class = ImportForm
+    export_form_class = ExportForm
 
 @admin.register(Section)
-class SectionAdmin(admin.ModelAdmin):
+class SectionAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ('name', 'program', 'program_code')
     search_fields = ('name', 'program__name', 'program__code')
     list_filter = ('program',)
@@ -292,9 +304,11 @@ class SectionAdmin(admin.ModelAdmin):
         if db_field.name == "program":
             kwargs["queryset"] = Program.objects.all().order_by('name')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    import_form_class = ImportForm
+    export_form_class = ExportForm
 
 @admin.register(Violation)
-class ViolationAdmin(admin.ModelAdmin):
+class ViolationAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = (
         'name', 
         'severity_colored', 
@@ -326,9 +340,11 @@ class ViolationAdmin(admin.ModelAdmin):
     def brief_description(self, obj):
         return obj.description[:50] + '...' if obj.description and len(obj.description) > 50 else obj.description or 'No description'
     brief_description.short_description = 'Description'
+    import_form_class = ImportForm
+    export_form_class = ExportForm
 
 @admin.register(Sanction)
-class SanctionAdmin(admin.ModelAdmin):
+class SanctionAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = (
         'name', 
         'violation_display', 
@@ -366,18 +382,42 @@ class SanctionAdmin(admin.ModelAdmin):
         if db_field.name == "violation":
             kwargs["queryset"] = Violation.objects.all().order_by('-severity', 'name')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    import_form_class = ImportForm
+    export_form_class = ExportForm
     
 @admin.register(User)
-class CustomUserAdmin(admin.ModelAdmin):
+class UserAdmin(BaseUserAdmin, ModelAdmin):
+    form = UserChangeForm
+    add_form = UserCreationForm
+    change_password_form = AdminPasswordChangeForm
+
+    formfield_overrides = {
+        'username': {'widget': TextInput(attrs={'class': 'vTextField', 'placeholder': 'Enter Username'})},
+        'email': {'widget': EmailInput(attrs={'class': 'vTextField', 'placeholder': 'Enter Email'})},
+        'password': {'widget': PasswordInput(attrs={'class': 'vTextField'})},
+    }
+
     fieldsets = (
-        (None, {'fields': ('username', 'password')}),
-        ('Personal Info', {'fields': ('first_name', 'last_name', 'email')}),
-        ('Important dates', {'fields': ('last_login', 'date_joined')}),
-        # Add any custom fields from your User model
-        ('Additional Information', {'fields': ('role',)}),
+        (None, {
+            'fields': ('username', 'password'),
+            'classes': ('card',),
+        }),
+        ('Personal Info', {
+            'fields': ('first_name', 'last_name', 'email'),
+            'classes': ('card',),
+        }),
+        ('Important dates', {
+            'fields': ('last_login', 'date_joined'),
+            'classes': ('card',),
+        }),
+        ('Additional Information', {
+            'fields': ('role',),
+            'classes': ('card',),
+        }),
     )
+
+    list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_staff')
     
-    list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_staff', )
     def get_queryset(self, request):
         return super().get_queryset(request).exclude(role=User.Role.STUDENT)
     
@@ -387,11 +427,11 @@ class CustomUserAdmin(admin.ModelAdmin):
     add_form = StaffSignupForm
     add_fieldsets = (
         (None, {
-            'classes': ('wide',),
+            'classes': ('wide', 'card'),
             'fields': (
-                'username', 'first_name', 'last_name', 
+                'username', 'first_name', 'last_name',
                 'email', 'employee_id', 'role',
-                'password1', 'password2'
+                'password1', 'password2',
             ),
         }),
     )
@@ -411,13 +451,14 @@ class CustomUserAdmin(admin.ModelAdmin):
             return self.add_fieldsets
         return super().get_fieldsets(request, obj)
 
+
     def get_fields(self, request, obj=None):
         if not obj:
             return list(self.add_fieldsets[0][1]['fields'])
         return super().get_fields(request, obj)
     
 @admin.register(ViolationRecord)
-class ViolationRecordAdmin(admin.ModelAdmin):
+class ViolationRecordAdmin(ExportMixin, admin.ModelAdmin):
     list_display = ('student', 'violation', 'sanction', 'recorded_by', 'recorded_at')
     search_fields = (
         'student__username', 
@@ -434,3 +475,4 @@ class ViolationRecordAdmin(admin.ModelAdmin):
             if 'violation' in request.GET:
                 kwargs["queryset"] = Sanction.objects.filter(violation_id=request.GET['violation'])
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    export_form_class = ExportForm
