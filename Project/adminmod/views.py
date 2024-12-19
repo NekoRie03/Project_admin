@@ -143,9 +143,13 @@ def redirect_user_after_login(user):
 def student_dashboard(request):
     violations = ViolationRecord.objects.filter(student=request.user)
     violation_count = violations.count()
-    return render(request, 'student/dashboard.html', {'violations': violations, 'violation_count': violation_count})
-
-
+    # Get the student registration data
+    student_registration = request.user.studentregistration
+    return render(request, 'student/dashboard.html', {
+        'violations': violations, 
+        'violation_count': violation_count,
+        'student_registration': student_registration
+    })
 @allowed_roles([User.Role.GUARD])
 def guard_dashboard(request):
     students = User.objects.filter(role=User.Role.STUDENT, studentregistration__is_approved=True)
@@ -196,6 +200,10 @@ def guard_change_password(request):
     
 @allowed_roles([User.Role.STUDENT])
 def student_change_password(request):
+    student_registration = request.user.studentregistration
+    return render(request, 'student/change-password.html', {
+        'student_registration': student_registration
+    })
     # Ensure only students can access this view
     if request.user.role != User.Role.STUDENT:
         messages.error(request, 'Unauthorized access')

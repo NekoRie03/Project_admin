@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Change Password</title>
+    <title>{% block title %}Student Dashboard{% endblock %}</title>
     <style>
         :root {
             --primary-color: #4f46e5;
@@ -11,8 +11,6 @@
             --text-primary: #111827;
             --text-secondary: #6b7280;
             --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --error-color: #ef4444;
-            --error-bg: #fee2e2;
         }
 
         * {
@@ -121,70 +119,60 @@
             color: var(--text-primary);
         }
 
-        .password-card {
+        .violations-card {
             background-color: var(--card-background);
             border-radius: 1rem;
             padding: 1.5rem;
             box-shadow: var(--shadow);
         }
 
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
         .card-title {
             font-size: 1.25rem;
             font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: var(--text-primary);
         }
 
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--background-color);
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            transition: all 0.2s ease;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
-
-        .error-message {
-            background-color: var(--error-bg);
-            color: var(--error-color);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            display: none;
-        }
-
-        .submit-button {
+        .violations-count {
             background-color: var(--primary-color);
             color: white;
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 0.5rem;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            width: 100%;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
         }
 
-        .submit-button:hover {
-            background-color: var(--secondary-color);
+        .violations-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .violations-table th {
+            background-color: var(--background-color);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .violations-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--background-color);
+        }
+
+        .severity-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            background-color: #fee2e2;
+            color: #991b1b;
+            display: inline-block;
         }
 
         @media (max-width: 768px) {
@@ -206,82 +194,32 @@
 
     <div class="container">
         <div class="dashboard-grid">
-            <!-- Student Profile Card -->
+            <!-- Profile Section -->
             <div class="student-profile">
                 <div class="profile-header">
                     {% if student_registration.id_image %}
-                    <img src="{{ student_registration.id_image.url }}" alt="Student ID Photo" class="profile-image">
+                        <img src="{{ student_registration.id_image.url }}" alt="Student ID Photo" class="profile-image">
                     {% endif %}
                     <h2 class="student-name">{{ request.user.get_full_name }}</h2>
                 </div>
-                
                 <div class="info-item">
                     <div class="info-label">Student ID</div>
                     <div class="info-value">{{ student_registration.student_id }}</div>
                 </div>
-                
                 <div class="info-item">
                     <div class="info-label">Program</div>
                     <div class="info-value">{{ student_registration.program }}</div>
                 </div>
-                
                 <div class="info-item">
                     <div class="info-label">Section</div>
                     <div class="info-value">{{ student_registration.section }}</div>
                 </div>
             </div>
 
-            <!-- Change Password Card -->
-            <div class="password-card">
-                <h2 class="card-title">Change Password</h2>
-                
-                <div class="error-message" id="errorMessage"></div>
-
-                <form id="changePasswordForm" method="post">
-                    {% csrf_token %}
-                    
-                    <div class="form-group">
-                        <label class="form-label" for="currentPassword">Current Password</label>
-                        <input type="password" class="form-input" id="currentPassword" name="old_password" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="newPassword">New Password</label>
-                        <input type="password" class="form-input" id="newPassword" name="new_password1" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="confirmPassword">Confirm New Password</label>
-                        <input type="password" class="form-input" id="confirmPassword" name="new_password2" required>
-                    </div>
-
-                    <button type="submit" class="submit-button">Change Password</button>
-                </form>
-            </div>
+            <!-- Content Block -->
+            {% block content %}
+            {% endblock %}
         </div>
     </div>
-
-    <script>
-        document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const errorMessage = document.getElementById('errorMessage');
-
-            if (newPassword !== confirmPassword) {
-                e.preventDefault();
-                errorMessage.textContent = 'New passwords do not match';
-                errorMessage.style.display = 'block';
-                return;
-            }
-
-            // Show Django messages if they exist
-            {% if messages %}
-                {% for message in messages %}
-                    errorMessage.textContent = '{{ message }}';
-                    errorMessage.style.display = 'block';
-                {% endfor %}
-            {% endif %}
-        });
-    </script>
 </body>
 </html>

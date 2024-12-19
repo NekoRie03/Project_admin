@@ -8,6 +8,8 @@ from .models import User, StudentRegistration, Program, Section, Violation, Sanc
 from .forms import StudentRegistrationAdminForm, StaffSignupForm
 from django.contrib.auth.models import Group
 
+from unfold.admin import ModelAdmin
+from unfold.decorators import action
 # Set Admin Header
 admin.site.site_header = "Student Violation System Administration"
 admin.site.site_title = "Student Violation System Admin Portal"
@@ -53,7 +55,7 @@ class ApprovalStatusFilter(admin.SimpleListFilter):
             return queryset.filter(is_approved=None)
 
 @admin.register(StudentRegistration)
-class StudentRegistrationAdmin(admin.ModelAdmin):
+class StudentRegistrationAdmin(ModelAdmin):
     list_per_page = 50
     list_max_show_all = 500
     form = StudentRegistrationAdminForm
@@ -269,7 +271,7 @@ class StudentRegistrationAdmin(admin.ModelAdmin):
         return False
 
 @admin.register(Program)
-class ProgramAdmin(admin.ModelAdmin):
+class ProgramAdmin(ModelAdmin):
     list_display = ('name', 'code', 'section_count')
     search_fields = ('name', 'code')
     list_filter = ('name',)
@@ -279,7 +281,7 @@ class ProgramAdmin(admin.ModelAdmin):
     section_count.short_description = 'Number of Sections'
 
 @admin.register(Section)
-class SectionAdmin(admin.ModelAdmin):
+class SectionAdmin(ModelAdmin):
     list_display = ('name', 'program', 'program_code')
     search_fields = ('name', 'program__name', 'program__code')
     list_filter = ('program',)
@@ -294,7 +296,7 @@ class SectionAdmin(admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 @admin.register(Violation)
-class ViolationAdmin(admin.ModelAdmin):
+class ViolationAdmin(ModelAdmin):
     list_display = (
         'name', 
         'severity_colored', 
@@ -328,7 +330,7 @@ class ViolationAdmin(admin.ModelAdmin):
     brief_description.short_description = 'Description'
 
 @admin.register(Sanction)
-class SanctionAdmin(admin.ModelAdmin):
+class SanctionAdmin(ModelAdmin):
     list_display = (
         'name', 
         'violation_display', 
@@ -368,7 +370,7 @@ class SanctionAdmin(admin.ModelAdmin):
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
     
 @admin.register(User)
-class CustomUserAdmin(admin.ModelAdmin):
+class CustomUserAdmin(ModelAdmin):
     fieldsets = (
         (None, {'fields': ('username', 'password')}),
         ('Personal Info', {'fields': ('first_name', 'last_name', 'email')}),
@@ -417,7 +419,7 @@ class CustomUserAdmin(admin.ModelAdmin):
         return super().get_fields(request, obj)
     
 @admin.register(ViolationRecord)
-class ViolationRecordAdmin(admin.ModelAdmin):
+class ViolationRecordAdmin(ModelAdmin):
     list_display = ('student', 'violation', 'sanction', 'recorded_by', 'recorded_at')
     search_fields = (
         'student__username', 

@@ -3,75 +3,255 @@
 <head>
     <title>Student Dashboard</title>
     <style>
-        /* Same CSS as student profile */
-        body {
-            font-family: Arial, sans-serif;
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #818cf8;
+            --background-color: #f3f4f6;
+            --card-background: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * {
             margin: 0;
             padding: 0;
-            background-color: #f5f5f5;
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
         .navbar {
-            background-color: #333;
-            overflow: hidden;
-            padding: 10px 20px;
-            color: white;
+            background-color: var(--card-background);
+            padding: 1rem 1.5rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
+
+        .navbar-brand {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
         .navbar-right {
-            float: right;
+            display: flex;
+            gap: 1rem;
         }
+
         .navbar a {
-            color: white;
+            color: var(--text-secondary);
             text-decoration: none;
-            padding: 8px 16px;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
         }
+
         .navbar a:hover {
-            background-color: #ddd;
-            color: black;
-            border-radius: 4px;
+            background-color: var(--background-color);
+            color: var(--primary-color);
         }
+
         .container {
             max-width: 1200px;
-            margin: 20px auto;
-            padding: 20px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        .student-profile {
+            background-color: var(--card-background);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .profile-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-image {
+            width: 150px;
+            height: 150px;
+            border-radius: 1rem;
+            object-fit: cover;
+            margin: 0 auto 1rem;
+            display: block;
+            border: 4px solid var(--secondary-color);
+        }
+
+        .student-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--background-color);
+        }
+
+        .info-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .violations-card {
+            background-color: var(--card-background);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .violations-count {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .violations-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .violations-table th {
+            background-color: var(--background-color);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .violations-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--background-color);
+        }
+
+        .severity-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            background-color: #fee2e2;
+            color: #991b1b;
+            display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <span>Student Dashboard</span>
+    <nav class="navbar">
+        <div class="navbar-brand">Student Dashboard</div>
         <div class="navbar-right">
+            <a href="{% url 'student_dashboard' %}">Violation Records</a>
+            <a href="{% url 'student_change_password' %}">Change Password</a>
             <a href="{% url 'logout' %}">Logout</a>
-            <a href="{% url 'student_change_password' %}" class="btn btn-warning">Change Password</a>
         </div>
-    </div>
+    </nav>
 
     <div class="container">
-        <h1>Welcome, {{ request.user.get_full_name }}</h1>
-        {% if violations %}
-        <h2>Your Violations ({{ violation_count }})</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Violation</th>
-                    <th>Severity</th>
-                    <th>Recorded At</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for record in violations %}
-                <tr>
-                    <td>{{ record.violation.name }}</td>
-                    <td>{{ record.violation.get_severity_display }}</td>
-                    <td>{{ record.recorded_at }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p>You have no recorded violations.</p>
-        {% endif %}
+        <div class="dashboard-grid">
+            <!-- Student Profile Card -->
+            <div class="student-profile">
+                <div class="profile-header">
+                    {% if student_registration.id_image %}
+                    <img src="{{ student_registration.id_image.url }}" alt="Student ID Photo" class="profile-image">
+                    {% endif %}
+                    <h2 class="student-name">{{ request.user.get_full_name }}</h2>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Student ID</div>
+                    <div class="info-value">{{ student_registration.student_id }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Program</div>
+                    <div class="info-value">{{ student_registration.program }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Section</div>
+                    <div class="info-value">{{ student_registration.section }}</div>
+                </div>
+            </div>
+
+            <!-- Violations Card -->
+            <div class="violations-card">
+                <div class="card-header">
+                    <h2 class="card-title">Violation Records</h2>
+                    {% if violations %}
+                    <span class="violations-count">{{ violation_count }}</span>
+                    {% endif %}
+                </div>
+
+                {% if violations %}
+                <table class="violations-table">
+                    <thead>
+                        <tr>
+                            <th>Violation</th>
+                            <th>Severity</th>
+                            <th>Date Recorded</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in violations %}
+                        <tr>
+                            <td>{{ record.violation.name }}</td>
+                            <td><span class="severity-badge">{{ record.violation.get_severity_display }}</span></td>
+                            <td>{{ record.recorded_at|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No violations recorded</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </body>
 </html>
-
-
