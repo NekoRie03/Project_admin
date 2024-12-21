@@ -18,6 +18,8 @@ from django.contrib.auth.models import User
 from unfold.admin import ModelAdmin
 from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
 
+from unfold.admin import ModelAdmin
+from unfold.decorators import action
 # Set Admin Header
 admin.site.site_header = "Student Violation System Administration"
 admin.site.site_title = "Student Violation System Admin Portal"
@@ -63,7 +65,11 @@ class ApprovalStatusFilter(admin.SimpleListFilter):
             return queryset.filter(is_approved=None)
 
 @admin.register(StudentRegistration)
+<<<<<<< HEAD
 class StudentRegistrationAdmin(ExportMixin, ModelAdmin):
+=======
+class StudentRegistrationAdmin(ModelAdmin):
+>>>>>>> 537891c20fc167c959f3aadca5939a36e0ea4ee8
     list_per_page = 50
     list_max_show_all = 500
     form = StudentRegistrationAdminForm
@@ -279,7 +285,11 @@ class StudentRegistrationAdmin(ExportMixin, ModelAdmin):
     export_form_class = ExportForm
 
 @admin.register(Program)
+<<<<<<< HEAD
 class ProgramAdmin(ImportExportModelAdmin, ModelAdmin):
+=======
+class ProgramAdmin(ModelAdmin):
+>>>>>>> 537891c20fc167c959f3aadca5939a36e0ea4ee8
     list_display = ('name', 'code', 'section_count')
     search_fields = ('name', 'code')
     list_filter = ('name',)
@@ -291,7 +301,11 @@ class ProgramAdmin(ImportExportModelAdmin, ModelAdmin):
     export_form_class = ExportForm
 
 @admin.register(Section)
+<<<<<<< HEAD
 class SectionAdmin(ImportExportModelAdmin, ModelAdmin):
+=======
+class SectionAdmin(ModelAdmin):
+>>>>>>> 537891c20fc167c959f3aadca5939a36e0ea4ee8
     list_display = ('name', 'program', 'program_code')
     search_fields = ('name', 'program__name', 'program__code')
     list_filter = ('program',)
@@ -308,7 +322,11 @@ class SectionAdmin(ImportExportModelAdmin, ModelAdmin):
     export_form_class = ExportForm
 
 @admin.register(Violation)
+<<<<<<< HEAD
 class ViolationAdmin(ImportExportModelAdmin, ModelAdmin):
+=======
+class ViolationAdmin(ModelAdmin):
+>>>>>>> 537891c20fc167c959f3aadca5939a36e0ea4ee8
     list_display = (
         'name', 
         'severity_colored', 
@@ -344,7 +362,11 @@ class ViolationAdmin(ImportExportModelAdmin, ModelAdmin):
     export_form_class = ExportForm
 
 @admin.register(Sanction)
+<<<<<<< HEAD
 class SanctionAdmin(ImportExportModelAdmin, ModelAdmin):
+=======
+class SanctionAdmin(ModelAdmin):
+>>>>>>> 537891c20fc167c959f3aadca5939a36e0ea4ee8
     list_display = (
         'name', 
         'violation_display', 
@@ -386,6 +408,7 @@ class SanctionAdmin(ImportExportModelAdmin, ModelAdmin):
     export_form_class = ExportForm
     
 @admin.register(User)
+<<<<<<< HEAD
 class UserAdmin(BaseUserAdmin, ModelAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
@@ -397,6 +420,9 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
         'password': {'widget': PasswordInput(attrs={'class': 'vTextField'})},
     }
 
+=======
+class CustomUserAdmin(ModelAdmin):
+>>>>>>> 537891c20fc167c959f3aadca5939a36e0ea4ee8
     fieldsets = (
         (None, {
             'fields': ('username', 'password'),
@@ -458,7 +484,11 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
         return super().get_fields(request, obj)
     
 @admin.register(ViolationRecord)
+<<<<<<< HEAD
 class ViolationRecordAdmin(ExportMixin, ModelAdmin):
+=======
+class ViolationRecordAdmin(ModelAdmin):
+>>>>>>> 537891c20fc167c959f3aadca5939a36e0ea4ee8
     list_display = ('student', 'violation', 'sanction', 'recorded_by', 'recorded_at')
     search_fields = (
         'student__username', 

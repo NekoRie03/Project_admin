@@ -32,7 +32,10 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'unfold',
+<<<<<<< HEAD
     'unfold.contrib.import_export',
+=======
+>>>>>>> 537891c20fc167c959f3aadca5939a36e0ea4ee8
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -131,8 +134,8 @@ STATICFILES_DIRS = [
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, '')
+MEDIA_URL = '/'
+MEDIA_ROOT = os.path.join(BASE_DIR)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -151,8 +154,12 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'studentviolationsystem.notifs.gmail.com'
+<<<<<<< HEAD
 EMAIL_HOST_PASSWORD = ''
 
 """JAZZMIN_SETTINGS = {
     "show_ui_builder" : True
 }"""
+=======
+EMAIL_HOST_PASSWORD = 'SVSys123'
+>>>>>>> 537891c20fc167c959f3aadca5939a36e0ea4ee8
