@@ -154,5 +154,3 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'studentviolationsystem.notifs.gmail.com'
 
 EMAIL_HOST_PASSWORD = ''
-
-EMAIL_HOST_PASSWORD = 'SVSys123'
