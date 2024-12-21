@@ -1,13 +1,15 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Registration Successful</title>
+    <link rel="stylesheet" href="{% static 'css/success.css' %}">
 </head>
 <body>
     <h2>Registration Successful!</h2>
     <p>Your account has been created successfully. You can now log in to your account.</p>
     
-    <a href= "">Go to Login</a>
+    <a href= "{% url 'login' %}">Go to Login</a>
 </body>
 </html>

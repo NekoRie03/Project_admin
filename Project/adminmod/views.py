@@ -10,6 +10,7 @@ from django.contrib.auth import logout
 from .decorators import unauthenticated_user, allowed_roles
 from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
+from django.db.models import Q
 User = get_user_model()
 
 def student_signup(request):
@@ -139,16 +140,36 @@ def redirect_user_after_login(user):
     else:
         return redirect('login')  # Default fallback
 
+
+
 @allowed_roles([User.Role.STUDENT])
 def student_dashboard(request):
     violations = ViolationRecord.objects.filter(student=request.user)
     violation_count = violations.count()
-    return render(request, 'student/dashboard.html', {'violations': violations, 'violation_count': violation_count})
+    # Get the student registration data
+    student_registration = request.user.studentregistration
+    return render(request, 'student/dashboard.html', {
+        'violations': violations, 
+        'violation_count': violation_count,
+        'student_registration': student_registration
+    })
 
 
 @allowed_roles([User.Role.GUARD])
 def guard_dashboard(request):
-    students = User.objects.filter(role=User.Role.STUDENT, studentregistration__is_approved=True)
+    # Get search query and filter students if search exists
+    search_query = request.GET.get('student_search', '')
+    if search_query:
+        students = User.objects.filter(
+            role=User.Role.STUDENT,
+            studentregistration__is_approved=True
+        ).filter(
+            Q(first_name__icontains=search_query) |
+            Q(last_name__icontains=search_query)
+        )
+    else:
+        students = User.objects.filter(role=User.Role.STUDENT, studentregistration__is_approved=True)
+    
     violations = Violation.objects.all()
 
     if request.method == "POST":

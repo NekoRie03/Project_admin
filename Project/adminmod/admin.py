@@ -63,7 +63,7 @@ class ApprovalStatusFilter(admin.SimpleListFilter):
             return queryset.filter(is_approved=None)
 
 @admin.register(StudentRegistration)
-class StudentRegistrationAdmin(ExportMixin, admin.ModelAdmin):
+class StudentRegistrationAdmin(ExportMixin, ModelAdmin):
     list_per_page = 50
     list_max_show_all = 500
     form = StudentRegistrationAdminForm
@@ -279,7 +279,7 @@ class StudentRegistrationAdmin(ExportMixin, admin.ModelAdmin):
     export_form_class = ExportForm
 
 @admin.register(Program)
-class ProgramAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+class ProgramAdmin(ImportExportModelAdmin, ModelAdmin):
     list_display = ('name', 'code', 'section_count')
     search_fields = ('name', 'code')
     list_filter = ('name',)
@@ -291,7 +291,7 @@ class ProgramAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     export_form_class = ExportForm
 
 @admin.register(Section)
-class SectionAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+class SectionAdmin(ImportExportModelAdmin, ModelAdmin):
     list_display = ('name', 'program', 'program_code')
     search_fields = ('name', 'program__name', 'program__code')
     list_filter = ('program',)
@@ -308,7 +308,7 @@ class SectionAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     export_form_class = ExportForm
 
 @admin.register(Violation)
-class ViolationAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+class ViolationAdmin(ImportExportModelAdmin, ModelAdmin):
     list_display = (
         'name', 
         'severity_colored', 
@@ -344,7 +344,7 @@ class ViolationAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     export_form_class = ExportForm
 
 @admin.register(Sanction)
-class SanctionAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+class SanctionAdmin(ImportExportModelAdmin, ModelAdmin):
     list_display = (
         'name', 
         'violation_display', 
@@ -458,7 +458,7 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
         return super().get_fields(request, obj)
     
 @admin.register(ViolationRecord)
-class ViolationRecordAdmin(ExportMixin, admin.ModelAdmin):
+class ViolationRecordAdmin(ExportMixin, ModelAdmin):
     list_display = ('student', 'violation', 'sanction', 'recorded_by', 'recorded_at')
     search_fields = (
         'student__username', 

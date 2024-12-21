@@ -1,9 +1,11 @@
 <!-- templates/signup/role_signup.html -->
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Role Signup (Admin or Guard)</title>
+    <link rel="stylesheet" href="{% static 'css/role_registration.css' %}">
 </head>
 <body>
     <h2>Role Signup</h2>
@@ -20,6 +22,8 @@
         
         <button type="submit">Sign Up</button>
     </form>
+    <div class="login-section">
     <p>Already have an account? <a href= % login % >Login here</a>.</p>
+    </div>
 </body>
 </html>

@@ -23,7 +23,7 @@ class StudentSignupForm(UserCreationForm):
         label="Program"
     )
     section = forms.ModelChoiceField(
-        queryset=Section.objects.none(), 
+        queryset=Section.objects.all(), 
         required=True, 
         label="Section"
     )
@@ -40,7 +40,7 @@ class StudentSignupForm(UserCreationForm):
             program_id = self.data.get('program')
             self.fields['section'].queryset = Section.objects.filter(program_id=program_id)
         else:
-            self.fields['section'].queryset = Section.objects.none()
+            self.fields['section'].queryset = Section.objects.all()
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -102,24 +102,7 @@ class GuardSignupForm(UserCreationForm):
             user.save()
         return user
 
-class GuardSignupForm(UserCreationForm):
-    first_name = forms.CharField(max_length=30, required=True)
-    last_name = forms.CharField(max_length=30, required=True)
-    username = forms.CharField(max_length=150, required=True)
-    employee_id = forms.CharField(max_length=150, required=True, label='Employee ID')
 
-    class Meta:
-        model = User
-        fields = ['username', 'first_name', 'last_name', 'employee_id', 'password1', 'password2']
-
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.role = User.Role.GUARD
-        user.is_staff = True
-        
-        if commit:
-            user.save()
-        return user
 
 class StudentRegistrationForm(forms.ModelForm):
     class Meta:
