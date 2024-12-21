@@ -217,9 +217,6 @@ def guard_change_password(request):
 @allowed_roles([User.Role.STUDENT])
 def student_change_password(request):
     student_registration = request.user.studentregistration
-    return render(request, 'student/change-password.html', {
-        'student_registration': student_registration
-    })
     # Ensure only students can access this view
     if request.user.role != User.Role.STUDENT:
         messages.error(request, 'Unauthorized access')

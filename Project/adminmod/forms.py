@@ -15,32 +15,10 @@ class StudentSignupForm(UserCreationForm):
     last_name = forms.CharField(max_length=30, required=True)
     username = forms.CharField(max_length=150, required=True)
     email = forms.EmailField(required=True)
-    
-    # New fields for Program and Section
-    program = forms.ModelChoiceField(
-        queryset=Program.objects.all(), 
-        required=True, 
-        label="Program"
-    )
-    section = forms.ModelChoiceField(
-        queryset=Section.objects.all(), 
-        required=True, 
-        label="Section"
-    )
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email', 'program', 'section', 'password1', 'password2']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        
-        # Dynamic section filtering based on selected program
-        if 'program' in self.data:
-            program_id = self.data.get('program')
-            self.fields['section'].queryset = Section.objects.filter(program_id=program_id)
-        else:
-            self.fields['section'].queryset = Section.objects.all()
+        fields = ['username', 'first_name', 'last_name', 'email', 'password1', 'password2']
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -49,16 +27,8 @@ class StudentSignupForm(UserCreationForm):
         
         if commit:
             user.save()
-            
-            # Create StudentRegistration with program and section
-            StudentRegistration.objects.create(
-                user=user,
-                program=self.cleaned_data['program'],
-                section=self.cleaned_data['section']
-            )
-        
         return user
-
+    
 class AdminSignupForm(UserCreationForm):
     first_name = forms.CharField(max_length=30, required=True)
     last_name = forms.CharField(max_length=30, required=True)
@@ -102,12 +72,20 @@ class GuardSignupForm(UserCreationForm):
             user.save()
         return user
 
-
-
 class StudentRegistrationForm(forms.ModelForm):
     class Meta:
         model = StudentRegistration
         fields = ['cor_image', 'id_image', 'program', 'section']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Dynamic section filtering based on selected program
+        if 'program' in self.data:
+            program_id = self.data.get('program')
+            self.fields['section'].queryset = Section.objects.filter(program_id=program_id)
+        else:
+            self.fields['section'].queryset = Section.objects.all()
         
 class StudentRegistrationAdminForm(forms.ModelForm):
     user_username = forms.CharField(

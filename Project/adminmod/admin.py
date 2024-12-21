@@ -13,10 +13,10 @@ from import_export.admin import ExportMixin
 from unfold.contrib.import_export.forms import ExportForm, ImportForm, SelectableFieldsExportForm
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.admin import register
-from django.contrib.auth.models import User
 
 from unfold.admin import ModelAdmin
 from unfold.forms import AdminPasswordChangeForm, UserChangeForm, UserCreationForm
+from unfold.admin import StackedInline, TabularInline
 
 # Set Admin Header
 admin.site.site_header = "Student Violation System Administration"
@@ -278,11 +278,17 @@ class StudentRegistrationAdmin(ExportMixin, ModelAdmin):
         return False
     export_form_class = ExportForm
 
+class SectionInline(TabularInline):
+    model = Section
+    extra = 1  # Number of empty forms to display
+    show_change_link = True
+
 @admin.register(Program)
 class ProgramAdmin(ImportExportModelAdmin, ModelAdmin):
     list_display = ('name', 'code', 'section_count')
     search_fields = ('name', 'code')
     list_filter = ('name',)
+    inlines = [SectionInline]
     
     def section_count(self, obj):
         return obj.sections.count()
@@ -290,6 +296,7 @@ class ProgramAdmin(ImportExportModelAdmin, ModelAdmin):
     import_form_class = ImportForm
     export_form_class = ExportForm
 
+# You can keep the SectionAdmin as well for direct access to sections
 @admin.register(Section)
 class SectionAdmin(ImportExportModelAdmin, ModelAdmin):
     list_display = ('name', 'program', 'program_code')
@@ -307,6 +314,11 @@ class SectionAdmin(ImportExportModelAdmin, ModelAdmin):
     import_form_class = ImportForm
     export_form_class = ExportForm
 
+class SanctionInline(StackedInline):
+    model = Sanction
+    extra = 1
+    show_change_link = True
+
 @admin.register(Violation)
 class ViolationAdmin(ImportExportModelAdmin, ModelAdmin):
     list_display = (
@@ -317,6 +329,7 @@ class ViolationAdmin(ImportExportModelAdmin, ModelAdmin):
     )
     search_fields = ('name', 'description')
     list_filter = ('severity',)
+    inlines = [SanctionInline]
     
     def severity_colored(self, obj):
         severity_colors = {
@@ -468,6 +481,7 @@ class ViolationRecordAdmin(ExportMixin, ModelAdmin):
         'sanction__name'
     )
     list_filter = ('recorded_at', 'violation__severity', 'sanction')
+    readonly_fields = ('student', 'recorded_by')
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "sanction":
