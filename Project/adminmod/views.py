@@ -153,11 +153,7 @@ def student_dashboard(request):
         'violation_count': violation_count,
         'student_registration': student_registration
     })
-<<<<<<< HEAD
 
-
-=======
->>>>>>> 537891c20fc167c959f3aadca5939a36e0ea4ee8
 @allowed_roles([User.Role.GUARD])
 def guard_dashboard(request):
     # Get search query and filter students if search exists
