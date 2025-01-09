@@ -27,13 +27,6 @@ admin.site.unregister(Group)
 class LogUtils:
     @staticmethod
     def create_log_entry(request_user, obj, action):
-        """
-        Create a log entry for administrative actions
-        
-        :param request_user: The user performing the action
-        :param obj: The object being modified
-        :param action: Description of the action taken
-        """
         LogEntry.objects.log_action(
             user_id=request_user.id,
             content_type_id=ContentType.objects.get_for_model(obj).id,
@@ -102,12 +95,12 @@ class StudentRegistrationAdmin(ExportMixin, ModelAdmin):
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
-        
+    
         class CustomForm(form):
             def __init__(self, *args, **kwargs):
-                self.current_user = kwargs.pop('current_user', None)
+                kwargs['current_user'] = request.user
                 super().__init__(*args, **kwargs)
-        
+    
         return CustomForm
     
     def display_username(self, obj):
@@ -216,7 +209,7 @@ class StudentRegistrationAdmin(ExportMixin, ModelAdmin):
         if obj:  # Change view
             return (
                 ('User Information', {
-                    'fields': ('user_username', 'user_first_name', 'user_last_name', 'user_email', 'registration_date')
+                    'fields': ('user', 'registration_date')
                 }),
                 ('Program and Section', {
                     'fields': ('program', 'section')
@@ -234,7 +227,7 @@ class StudentRegistrationAdmin(ExportMixin, ModelAdmin):
         else:  # Add view
             return (
                 ('User Information', {
-                    'fields': ('user_username', 'user_first_name', 'user_last_name', 'user_email', 'password1', 'password2')
+                    'fields': ('user',)
                 }),
                 ('Program and Section', {
                     'fields': ('program', 'section')
@@ -243,29 +236,27 @@ class StudentRegistrationAdmin(ExportMixin, ModelAdmin):
                     'fields': ('cor_image', 'id_image')
                 }),
                 ('Review Information', {
-                    'fields': ('is_approved', 'review_comments', 'review_date')
+                    'fields': ('is_approved', 'review_comments')
                 }),
                 ('Change Confirmation', {
                     'fields': ('admin_password',),
                 }),
             )
 
-
     def get_fields(self, request, obj=None):
         if obj:  # Change view
-            return ['user_username', 'user_first_name', 'user_last_name', 'user_email', 'registration_date', 
+            return ['user', 'registration_date', 
                     'program', 'section', 'cor_image', 'id_image', 
                     'is_approved', 'review_comments', 'review_date', 'admin_password']
         else:  # Add view
-            return ['user_username', 'user_first_name', 'user_last_name', 'user_email', 
-                    'program', 'section', 'cor_image', 'id_image']
+            return ['user', 'program', 'section', 'cor_image', 'id_image', 
+                    'is_approved', 'review_comments', 'admin_password']
             
     def get_readonly_fields(self, request, obj=None):
         if obj and obj.is_approved is None:
             return ['registration_date', 'review_date']
         elif obj and obj.is_approved is not None:
-            return ['username', 'first_name', 'last_name', 'email', 
-                    'registration_date', 'review_date', 'cor_image', 'id_image']
+            return ['user', 'registration_date', 'review_date', 'cor_image', 'id_image']
         return []
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
@@ -430,10 +421,6 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
     )
 
     list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_staff')
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request).exclude(role=User.Role.STUDENT)
-    
     list_filter = ('role', 'is_staff')
     search_fields = ('username', 'email', 'first_name', 'last_name')
 
