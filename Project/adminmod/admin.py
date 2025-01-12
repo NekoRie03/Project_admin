@@ -46,13 +46,6 @@ admin.site.unregister(Group)
 class LogUtils:
     @staticmethod
     def create_log_entry(request_user, obj, action):
-        """
-        Create a log entry for administrative actions
-        
-        :param request_user: The user performing the action
-        :param obj: The object being modified
-        :param action: Description of the action taken
-        """
         LogEntry.objects.log_action(
             user_id=request_user.id,
             content_type_id=ContentType.objects.get_for_model(obj).id,
@@ -117,6 +110,19 @@ class StudentRegistrationAdmin(ModelAdmin):
     readonly_fields = ('registration_date', 'review_date')
     actions = ['approve_selected', 'reject_selected', 'export_as_pdf']
 
+<<<<<<< HEAD
+=======
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+    
+        class CustomForm(form):
+            def __init__(self, *args, **kwargs):
+                kwargs['current_user'] = request.user
+                super().__init__(*args, **kwargs)
+    
+        return CustomForm
+    
+>>>>>>> 0b8d858c28a18d3c29bc3fc591f954e1032fcf60
     def display_username(self, obj):
         return obj.user.username if obj.user else "No User"
     display_username.short_description = 'Username'
@@ -307,11 +313,50 @@ class StudentRegistrationAdmin(ModelAdmin):
         self._bulk_update_status(request, queryset, False, 'rejected')
     reject_selected.short_description = "Reject selected registrations"
 
+<<<<<<< HEAD
     def assign_qr_code_button(self, obj):
         if obj.qr_code:
             return format_html(
                 '<span style="color: green;">QR Code: {}</span>',
                 obj.qr_code
+=======
+    def get_fieldsets(self, request, obj=None):
+        if obj:  # Change view
+            return (
+                ('User Information', {
+                    'fields': ('user', 'registration_date')
+                }),
+                ('Program and Section', {
+                    'fields': ('program', 'section')
+                }),
+                ('Documents', {
+                    'fields': ('cor_image', 'id_image')
+                }),
+                ('Review Information', {
+                    'fields': ('is_approved', 'review_comments', 'review_date')
+                }),
+                ('Change Confirmation', {
+                    'fields': ('admin_password',),
+                }),
+            )
+        else:  # Add view
+            return (
+                ('User Information', {
+                    'fields': ('user',)
+                }),
+                ('Program and Section', {
+                    'fields': ('program', 'section')
+                }),
+                ('Documents', {
+                    'fields': ('cor_image', 'id_image')
+                }),
+                ('Review Information', {
+                    'fields': ('is_approved', 'review_comments')
+                }),
+                ('Change Confirmation', {
+                    'fields': ('admin_password',),
+                }),
+>>>>>>> 0b8d858c28a18d3c29bc3fc591f954e1032fcf60
             )
         return format_html(
             '<a class="button" onclick="window.open(\'assign_qr_code/{}/\', \'Assign QR Code\', \'width=400,height=200\')" '
@@ -321,6 +366,7 @@ class StudentRegistrationAdmin(ModelAdmin):
     assign_qr_code_button.short_description = 'QR Code'
     assign_qr_code_button.allow_tags = True
 
+<<<<<<< HEAD
     def assign_qr_code(self, request, student_id):
         student = get_object_or_404(StudentRegistration, pk=student_id)
         
@@ -391,6 +437,33 @@ class StudentRegistrationAdmin(ModelAdmin):
             ),
         ]
         return custom_urls + urls
+=======
+    def get_fields(self, request, obj=None):
+        if obj:  # Change view
+            return ['user', 'registration_date', 
+                    'program', 'section', 'cor_image', 'id_image', 
+                    'is_approved', 'review_comments', 'review_date', 'admin_password']
+        else:  # Add view
+            return ['user', 'program', 'section', 'cor_image', 'id_image', 
+                    'is_approved', 'review_comments', 'admin_password']
+            
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.is_approved is None:
+            return ['registration_date', 'review_date']
+        elif obj and obj.is_approved is not None:
+            return ['user', 'registration_date', 'review_date', 'cor_image', 'id_image']
+        return []
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "section":
+            if 'program' in request.GET:
+                kwargs["queryset"] = Section.objects.filter(program_id=request.GET['program'])
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+    export_form_class = ExportForm
+>>>>>>> 0b8d858c28a18d3c29bc3fc591f954e1032fcf60
 
 class SectionInline(TabularInline):
     model = Section
@@ -537,10 +610,6 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
     )
 
     list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_staff')
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request).exclude(role=User.Role.STUDENT)
-    
     list_filter = ('role', 'is_staff')
     search_fields = ('username', 'email', 'first_name', 'last_name')
 
