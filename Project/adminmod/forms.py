@@ -88,6 +88,7 @@ class StudentRegistrationForm(forms.ModelForm):
             self.fields['section'].queryset = Section.objects.all()
         
 class StudentRegistrationAdminForm(forms.ModelForm):
+<<<<<<< HEAD
     user_username = forms.CharField(
         max_length=150,
         required=False,
@@ -118,6 +119,12 @@ class StudentRegistrationAdminForm(forms.ModelForm):
         widget=forms.PasswordInput,
         required=True
     )
+=======
+    user_username = forms.CharField(max_length=150, required=False, label="Username")
+    user_first_name = forms.CharField(max_length=30, required=False, label="First Name")
+    user_last_name = forms.CharField(max_length=30, required=False, label="Last Name")
+    user_email = forms.EmailField(required=False, label="Email")
+>>>>>>> 0b8d858c28a18d3c29bc3fc591f954e1032fcf60
     admin_password = forms.CharField(
         label="Admin Password Confirmation",
         widget=forms.PasswordInput,
@@ -139,24 +146,11 @@ class StudentRegistrationAdminForm(forms.ModelForm):
             'review_comments'
         ]
 
-    def clean_password2(self):
-        password1 = self.cleaned_data.get('password1')
-        password2 = self.cleaned_data.get('password2')
-        if password1 and password2 and password1 != password2:
-            raise ValidationError("Passwords do not match.")
-        return password2
-
-    def clean_admin_password(self):
-        admin_password = self.cleaned_data.get('admin_password')
-        current_user = self.initial.get('current_user')  # May be None
-
-        # If no current user is provided, skip admin password validation
-        if not current_user:
-            return admin_password
-
-        if not admin_password:
-            raise ValidationError("Admin password is required to confirm changes.")
+    def __init__(self, *args, **kwargs):
+        self.current_user = kwargs.pop('current_user', None)
+        super().__init__(*args, **kwargs)
         
+<<<<<<< HEAD
         # Verify the admin password belongs to the current admin user
         if not authenticate(username=current_user.username, password=admin_password):
             raise ValidationError("Incorrect admin password.")
@@ -216,22 +210,38 @@ class StudentRegistrationAdminForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         # Pre-populate fields if an instance exists and has a user
+=======
+        # Pre-populate user fields if instance exists
+>>>>>>> 0b8d858c28a18d3c29bc3fc591f954e1032fcf60
         if self.instance and self.instance.user_id:
             self.fields['user_username'].initial = self.instance.user.username
             self.fields['user_first_name'].initial = self.instance.user.first_name
             self.fields['user_last_name'].initial = self.instance.user.last_name
             self.fields['user_email'].initial = self.instance.user.email
+            
+            # Make user fields readonly for existing registrations
+            self.fields['user_username'].widget.attrs['readonly'] = True
+            self.fields['user_first_name'].widget.attrs['readonly'] = True
+            self.fields['user_last_name'].widget.attrs['readonly'] = True
+            self.fields['user_email'].widget.attrs['readonly'] = True
 
-        # Ensure is_approved field is optional
-        if 'is_approved' in self.fields:
-            self.fields['is_approved'].required = False
-            self.fields['is_approved'].initial = None
+        # Make admin_password optional if no current user
+        if not self.current_user:
+            self.fields['admin_password'].required = False
+            self.fields['admin_password'].widget.attrs['disabled'] = True
 
-        # Make review_comments optional
-        self.fields['review_comments'].required = False
+    def clean_admin_password(self):
+        admin_password = self.cleaned_data.get('admin_password')
+        if self.current_user and self.instance.is_approved is not None:
+            if not admin_password:
+                raise ValidationError("Admin password is required to confirm changes.")
+            if not authenticate(username=self.current_user.username, password=admin_password):
+                raise ValidationError("Incorrect admin password.")
+        return admin_password
 
     def clean(self):
         cleaned_data = super().clean()
+<<<<<<< HEAD
 
         # Modify the required fields check
         required_fields = ['user_first_name', 'user_last_name', 'user_email', 'program', 'section']
@@ -243,6 +253,13 @@ class StudentRegistrationAdminForm(forms.ModelForm):
             if not cleaned_data.get(field):
                 self.add_error(field, "This field is required.")
 
+=======
+        if not self.instance.pk:  # Only validate required fields for new registrations
+            required_fields = ['user_username', 'user_first_name', 'user_last_name', 'user_email']
+            for field in required_fields:
+                if not cleaned_data.get(field):
+                    self.add_error(field, "This field is required.")
+>>>>>>> 0b8d858c28a18d3c29bc3fc591f954e1032fcf60
         return cleaned_data
 
 class StaffSignupForm(UserCreationForm):
@@ -250,11 +267,12 @@ class StaffSignupForm(UserCreationForm):
     last_name = forms.CharField(max_length=30, required=True)
     username = forms.CharField(max_length=150, required=True)
     email = forms.EmailField(required=True)
-    employee_id = forms.CharField(max_length=150, required=True, label='Employee ID')
+    employee_id = forms.CharField(max_length=150, required=True, label='ID Number')
     role = forms.ChoiceField(
         choices=[
             (User.Role.ADMIN, 'Admin'),
-            (User.Role.GUARD, 'Guard')
+            (User.Role.GUARD, 'Guard'),
+            (User.Role.STUDENT, 'Student'),
         ], 
         required=True, 
         initial=User.Role.ADMIN
@@ -273,8 +291,8 @@ class StaffSignupForm(UserCreationForm):
         user.role = self.cleaned_data['role']
         
         # Set staff status based on role
-        if user.role in [User.Role.ADMIN, User.Role.GUARD]:
-            user.is_staff = True
+        if user.role in [User.Role.ADMIN, User.Role.GUARD, User.Role.STUDENT]:
+            user.is_active = True
         
         # Set superuser only for admin
         if user.role == User.Role.ADMIN:

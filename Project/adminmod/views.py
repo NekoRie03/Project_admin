@@ -144,9 +144,12 @@ def redirect_user_after_login(user):
 
 @allowed_roles([User.Role.STUDENT])
 def student_dashboard(request):
+<<<<<<< HEAD
     if request.user.force_password_change:
         messages.warning(request, 'Please change your password to continue.')
         return redirect('student_change_password')
+=======
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
     # Retrieve all violation records for the logged-in student
     violations = ViolationRecord.objects.filter(student=request.user).select_related('sanction', 'violation')
 

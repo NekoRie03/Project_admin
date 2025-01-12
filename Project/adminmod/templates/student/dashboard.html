@@ -236,7 +236,10 @@
                             <th>Severity</th>
                             <th>Sanction</th>
                             <th>Total Hours</th>
+<<<<<<< HEAD
                             <th>Total Hours Complied</th>
+=======
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
                             <th>Hours Remaining</th>
                             <th>Status</th>
                         </tr>
@@ -248,6 +251,7 @@
                             <td><span class="severity-badge">{{ record.violation.get_severity_display }}</span></td>
                             <td>{{ record.sanction.name }}</td>
                             <td>{{ record.sanction.duration_value }} Hours</td>
+<<<<<<< HEAD
                             <td>{{ record.total_hours_complied|floatformat:1 }}</td>
                             <td>{{ record.hours_remaining|floatformat:1 }}</td>
                             <td>
@@ -255,6 +259,14 @@
                                 <span class="badge badge-success" style="color: green; font-weight: bold;">Completed</span>
                                 {% else %}
                                 <span class="badge badge-warning" style="color: orange; font-weight: bold;">In Progress</span>
+=======
+                            <td>{{ record.sanction.duration_value|floatformat:1|add:"-"|add:record.total_hours_complied|floatformat:1 }} Hours</td>
+                            <td>
+                                {% if record.is_completed %}
+                                <span class="badge badge-success">Completed</span>
+                                {% else %}
+                                <span class="badge badge-warning">In Progress</span>
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
                                 {% endif %}
                             </td>
                         </tr>

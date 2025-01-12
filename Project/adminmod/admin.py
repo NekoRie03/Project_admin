@@ -46,13 +46,6 @@ admin.site.unregister(Group)
 class LogUtils:
     @staticmethod
     def create_log_entry(request_user, obj, action):
-        """
-        Create a log entry for administrative actions
-        
-        :param request_user: The user performing the action
-        :param obj: The object being modified
-        :param action: Description of the action taken
-        """
         LogEntry.objects.log_action(
             user_id=request_user.id,
             content_type_id=ContentType.objects.get_for_model(obj).id,
@@ -82,7 +75,7 @@ class ApprovalStatusFilter(admin.SimpleListFilter):
             return queryset.filter(is_approved=None)
 
 @admin.register(StudentRegistration)
-class StudentRegistrationAdmin(ExportMixin, ModelAdmin):
+class StudentRegistrationAdmin(ModelAdmin):
     list_per_page = 50
     list_max_show_all = 500
     form = StudentRegistrationAdminForm
@@ -117,6 +110,22 @@ class StudentRegistrationAdmin(ExportMixin, ModelAdmin):
     readonly_fields = ('registration_date', 'review_date')
     actions = ['approve_selected', 'reject_selected', 'export_as_pdf']
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+    
+        class CustomForm(form):
+            def __init__(self, *args, **kwargs):
+                kwargs['current_user'] = request.user
+                super().__init__(*args, **kwargs)
+    
+        return CustomForm
+    
+>>>>>>> 0b8d858c28a18d3c29bc3fc591f954e1032fcf60
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
     def display_username(self, obj):
         return obj.user.username if obj.user else "No User"
     display_username.short_description = 'Username'
@@ -307,11 +316,56 @@ class StudentRegistrationAdmin(ExportMixin, ModelAdmin):
         self._bulk_update_status(request, queryset, False, 'rejected')
     reject_selected.short_description = "Reject selected registrations"
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
     def assign_qr_code_button(self, obj):
         if obj.qr_code:
             return format_html(
                 '<span style="color: green;">QR Code: {}</span>',
                 obj.qr_code
+<<<<<<< HEAD
+=======
+=======
+    def get_fieldsets(self, request, obj=None):
+        if obj:  # Change view
+            return (
+                ('User Information', {
+                    'fields': ('user', 'registration_date')
+                }),
+                ('Program and Section', {
+                    'fields': ('program', 'section')
+                }),
+                ('Documents', {
+                    'fields': ('cor_image', 'id_image')
+                }),
+                ('Review Information', {
+                    'fields': ('is_approved', 'review_comments', 'review_date')
+                }),
+                ('Change Confirmation', {
+                    'fields': ('admin_password',),
+                }),
+            )
+        else:  # Add view
+            return (
+                ('User Information', {
+                    'fields': ('user',)
+                }),
+                ('Program and Section', {
+                    'fields': ('program', 'section')
+                }),
+                ('Documents', {
+                    'fields': ('cor_image', 'id_image')
+                }),
+                ('Review Information', {
+                    'fields': ('is_approved', 'review_comments')
+                }),
+                ('Change Confirmation', {
+                    'fields': ('admin_password',),
+                }),
+>>>>>>> 0b8d858c28a18d3c29bc3fc591f954e1032fcf60
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
             )
         return format_html(
             '<a class="button" onclick="window.open(\'assign_qr_code/{}/\', \'Assign QR Code\', \'width=400,height=200\')" '
@@ -321,6 +375,10 @@ class StudentRegistrationAdmin(ExportMixin, ModelAdmin):
     assign_qr_code_button.short_description = 'QR Code'
     assign_qr_code_button.allow_tags = True
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
     def assign_qr_code(self, request, student_id):
         student = get_object_or_404(StudentRegistration, pk=student_id)
         
@@ -391,6 +449,36 @@ class StudentRegistrationAdmin(ExportMixin, ModelAdmin):
             ),
         ]
         return custom_urls + urls
+<<<<<<< HEAD
+=======
+=======
+    def get_fields(self, request, obj=None):
+        if obj:  # Change view
+            return ['user', 'registration_date', 
+                    'program', 'section', 'cor_image', 'id_image', 
+                    'is_approved', 'review_comments', 'review_date', 'admin_password']
+        else:  # Add view
+            return ['user', 'program', 'section', 'cor_image', 'id_image', 
+                    'is_approved', 'review_comments', 'admin_password']
+            
+    def get_readonly_fields(self, request, obj=None):
+        if obj and obj.is_approved is None:
+            return ['registration_date', 'review_date']
+        elif obj and obj.is_approved is not None:
+            return ['user', 'registration_date', 'review_date', 'cor_image', 'id_image']
+        return []
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "section":
+            if 'program' in request.GET:
+                kwargs["queryset"] = Section.objects.filter(program_id=request.GET['program'])
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+    export_form_class = ExportForm
+>>>>>>> 0b8d858c28a18d3c29bc3fc591f954e1032fcf60
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
 
 class SectionInline(TabularInline):
     model = Section
@@ -400,7 +488,7 @@ class SectionInline(TabularInline):
 
 
 @admin.register(Program)
-class ProgramAdmin(ImportExportModelAdmin, ModelAdmin):
+class ProgramAdmin(ModelAdmin):
     list_display = ('name', 'code', 'section_count')
     search_fields = ('name', 'code')
     list_filter = ('name',)
@@ -409,11 +497,9 @@ class ProgramAdmin(ImportExportModelAdmin, ModelAdmin):
     def section_count(self, obj):
         return obj.sections.count()
     section_count.short_description = 'Number of Sections'
-    import_form_class = ImportForm
-    export_form_class = ExportForm
 
 @admin.register(Section)
-class SectionAdmin(ImportExportModelAdmin, ModelAdmin):
+class SectionAdmin(ModelAdmin):
     list_display = ('name', 'program', 'program_code')
     search_fields = ('name', 'program__name', 'program__code')
     list_filter = ('program',)
@@ -426,8 +512,6 @@ class SectionAdmin(ImportExportModelAdmin, ModelAdmin):
         if db_field.name == "program":
             kwargs["queryset"] = Program.objects.all().order_by('name')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-    import_form_class = ImportForm
-    export_form_class = ExportForm
 
 class SanctionInline(StackedInline):
     model = Sanction
@@ -435,7 +519,7 @@ class SanctionInline(StackedInline):
     show_change_link = True
 
 @admin.register(Violation)
-class ViolationAdmin(ImportExportModelAdmin, ModelAdmin):
+class ViolationAdmin(ModelAdmin):
     list_display = (
         'name', 
         'severity_colored', 
@@ -468,11 +552,9 @@ class ViolationAdmin(ImportExportModelAdmin, ModelAdmin):
     def brief_description(self, obj):
         return obj.description[:50] + '...' if obj.description and len(obj.description) > 50 else obj.description or 'No description'
     brief_description.short_description = 'Description'
-    import_form_class = ImportForm
-    export_form_class = ExportForm
 
 @admin.register(Sanction)
-class SanctionAdmin(ImportExportModelAdmin, ModelAdmin):
+class SanctionAdmin(ModelAdmin):
     list_display = (
         'name', 
         'violation_display', 
@@ -510,8 +592,6 @@ class SanctionAdmin(ImportExportModelAdmin, ModelAdmin):
         if db_field.name == "violation":
             kwargs["queryset"] = Violation.objects.all().order_by('-severity', 'name')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
-    import_form_class = ImportForm
-    export_form_class = ExportForm
     
 @admin.register(User)
 class UserAdmin(BaseUserAdmin, ModelAdmin):
@@ -545,10 +625,6 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
     )
 
     list_display = ('username', 'email', 'first_name', 'last_name', 'role', 'is_staff')
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request).exclude(role=User.Role.STUDENT)
-    
     list_filter = ('role', 'is_staff')
     search_fields = ('username', 'email', 'first_name', 'last_name')
 
@@ -587,7 +663,11 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
     
 @admin.register(ViolationRecord)
 class ViolationRecordAdmin(ModelAdmin):
+<<<<<<< HEAD
     list_display = ('student', 'violation', 'sanction', 'recorded_by', 'recorded_at', 'total_hours_complied', 'status', 'view_qr_code', 'time_in_button', 'time_out_button',)
+=======
+    list_display = ('student', 'violation', 'sanction', 'recorded_by', 'recorded_at', 'total_hours_complied', 'status', 'view_qr_code','time_in_button','time_out_button',)
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
     search_fields = (
         'student__username',
         'student__first_name',
@@ -598,6 +678,7 @@ class ViolationRecordAdmin(ModelAdmin):
     list_filter = ('recorded_at', 'violation__severity', 'sanction')
     readonly_fields = ('student', 'recorded_by')
 
+<<<<<<< HEAD
     actions = [
         'export_weekly_violations_as_pdf', 
         'export_monthly_violations_as_pdf',
@@ -606,6 +687,9 @@ class ViolationRecordAdmin(ModelAdmin):
         'export_weekly_violations_as_word',
         'export_monthly_violations_as_word'
     ]
+=======
+    actions = ['export_weekly_violations_as_pdf', 'export_monthly_violations_as_pdf']
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
 
     def export_weekly_violations_as_pdf(self, request, queryset):
         """Export a PDF report of violations committed in the last week."""
@@ -622,11 +706,17 @@ class ViolationRecordAdmin(ModelAdmin):
             filename="weekly_violations_report.pdf",
             date_range=(one_week_ago, now()),
         )
+<<<<<<< HEAD
         # Add a success message
         messages.success(request, "Weekly violations report has been exported successfully as a PDF.")
         return response
 
 
+=======
+        messages.success(request, "Weekly violations report has been exported.")
+        return response
+
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
     def export_monthly_violations_as_pdf(self, request, queryset):
         """Export a PDF report of violations committed in the last month."""
         one_month_ago = now() - timedelta(days=30)
@@ -642,8 +732,12 @@ class ViolationRecordAdmin(ModelAdmin):
             filename="monthly_violations_report.pdf",
             date_range=(one_month_ago, now()),
         )
+<<<<<<< HEAD
         # Add a success message
         messages.success(request, "Monthly violations report has been exported successfully as a PDF.")
+=======
+        messages.success(request, "Monthly violations report has been exported.")
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
         return response
 
     def generate_pdf_report(self, violations, title, filename, date_range):
@@ -738,6 +832,7 @@ class ViolationRecordAdmin(ModelAdmin):
         response.write(buffer.read())
         return response
 
+<<<<<<< HEAD
     def export_weekly_violations_as_excel(self, request, queryset):
         """Export weekly violations to an Excel file."""
         one_week_ago = now() - timedelta(days=7)
@@ -966,6 +1061,8 @@ class ViolationRecordAdmin(ModelAdmin):
         messages.success(request, f"{title} has been exported as a Word file.")
         return response
         
+=======
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "sanction":
             # If a violation is selected, filter sanctions by that violation
@@ -1133,15 +1230,22 @@ class ViolationRecordAdmin(ModelAdmin):
 
     def time_in_button(self, obj):
         return format_html(
+<<<<<<< HEAD
             '<a onclick="window.open(\'time_in/{}/\', \'Time In\', \'width=400,height=200\')" '
             'href="javascript:void(0)" style="color: #4CAF50; text-decoration: underline; font-size: 14px;">Time In</a>',
+=======
+            '<a class="button" onclick="window.open(\'time_in/{}/\', \'Time In\', \'width=400,height=200\')" href="javascript:void(0)">Time In</a>',
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
             obj.id
         )
     time_in_button.short_description = 'Time In'
     time_in_button.allow_tags = True
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
     def time_out(self, request, record_id):
         record = get_object_or_404(ViolationRecord, pk=record_id)
         if request.method == "POST":
@@ -1179,7 +1283,11 @@ class ViolationRecordAdmin(ModelAdmin):
 
     def time_out_button(self, obj):
         return format_html(
+<<<<<<< HEAD
             '<a class="button" onclick="window.open(\'time_out/{}/\', \'Time Out\', \'width=400,height=200\')" href="javascript:void(0)"style="color: #FF0000; text-decoration: underline; font-size: 14px;">Time Out</a>',
+=======
+            '<a class="button" onclick="window.open(\'time_out/{}/\', \'Time Out\', \'width=400,height=200\')" href="javascript:void(0)">Time Out</a>',
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
             obj.id
         )
     time_out_button.short_description = 'Time Out'

@@ -275,8 +275,11 @@ class ViolationRecord(models.Model):
         total_duration = self.sanction.duration_value
         return self.total_hours_complied >= total_duration
 
+<<<<<<< HEAD
     def hours_remaining(self):
         if self.sanction:
             remaining_hours = self.sanction.duration_value - self.total_hours_complied
             return max(remaining_hours, 0)  # Ensure that remaining hours don't go negative
         return 0
+=======
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309

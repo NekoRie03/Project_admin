@@ -24,6 +24,7 @@ urlpatterns = [
     path('student/change-password/', student_change_password, name='student_change_password'),
     #reset password
     path('reset/password/',
+<<<<<<< HEAD
         auth_views.PasswordResetView.as_view(
             template_name='authentication/password_reset.html',
             success_url='/reset/password/done/'
@@ -34,6 +35,13 @@ urlpatterns = [
         auth_views.PasswordResetDoneView.as_view(
             template_name='authentication/password_reset_sent.html'
         ), 
+=======
+        auth_views.PasswordResetView.as_view(template_name='authentication/password_reset.html'), 
+        name='reset_password'),
+    
+    path('reset/password/done/', 
+        auth_views.PasswordResetDoneView.as_view(template_name='authentication/password_reset_sent.html'), 
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
         name='password_reset_done'),
     
     path('reset/<uidb64>/<token>/', 
@@ -43,9 +51,13 @@ urlpatterns = [
         name='password_reset_confirm'),
     
     path('password-reset-complete/', 
+<<<<<<< HEAD
         auth_views.PasswordResetCompleteView.as_view(
             template_name='authentication/password_reset_done.html'
         ), 
+=======
+        auth_views.PasswordResetCompleteView.as_view(template_name='authentication/password_reset_done.html'), 
+>>>>>>> 3dc4122aeb5dfbedadf0afeda490a0bfd59a2309
         name='password_reset_complete'),
 ]
 
