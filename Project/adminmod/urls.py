@@ -23,11 +23,11 @@ urlpatterns = [
     path('guard/change-password/', guard_change_password, name='guard_change_password'),
     path('student/change-password/', student_change_password, name='student_change_password'),
     #reset password
-    path('reset_password/',
+    path('reset/password/',
         auth_views.PasswordResetView.as_view(template_name='authentication/password_reset.html'), 
         name='reset_password'),
     
-    path('reset_password_sent/', 
+    path('reset/password/done/', 
         auth_views.PasswordResetDoneView.as_view(template_name='authentication/password_reset_sent.html'), 
         name='password_reset_done'),
     
@@ -35,9 +35,9 @@ urlpatterns = [
         auth_views.PasswordResetConfirmView.as_view(template_name='authentication/password_reset_form.html'), 
         name='password_reset_confirm'),
     
-    path('reset_password_complete/', 
+    path('password-reset-complete/', 
         auth_views.PasswordResetCompleteView.as_view(template_name='authentication/password_reset_done.html'), 
-        name='reset_password_complete'),
+        name='password_reset_complete'),
 ]
 
 if settings.DEBUG:

@@ -1,126 +1,90 @@
-/* Previous styles remain the same */
+:root {
+    --primary-color: #4f46e5;
+    --secondary-color: #818cf8;
+    --background-color: #f3f4f6;
+    --card-background: #ffffff;
+    --text-primary: #111827;
+    --text-secondary: #6b7280;
+    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
     margin: 0;
-    padding: 20px;
-    background-color: #CBDCEB;
+    overflow-y: auto;
 }
 
-/* Main Container */
-.container, 
-form {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 30px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-/* Headers */
-h2 {
-    font-size: 24px;
-    margin-bottom: 30px;
-    color: #333;
-    text-align: center;
+.card {
+    background-color: var(--card-background);
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: var(--shadow);
     width: 100%;
-}
-
-/* Form Fields */
-input, 
-select {
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0 20px;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
     box-sizing: border-box;
 }
 
-/* Register Button Styling */
-input[type="submit"],
-button[type="submit"],
-.register-btn {
-    background-color: #0066ff;
+.card h2 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-top: 1rem;
+}
+
+select,
+input[type="text"],
+input[type="password"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--background-color);
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    margin-top: 0.5rem;
+}
+
+button {
+    background-color: var(--primary-color);
     color: white;
-    padding: 12px 30px;
     border: none;
-    border-radius: 25px;
-    font-size: 16px;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 1rem;
     cursor: pointer;
-    display: block;
-    margin: 30px auto;
-    min-width: 150px;
-    text-transform: uppercase;
-    font-weight: 500;
-    box-shadow: 0 4px 8px rgba(0, 102, 255, 0.2);
-    transition: all 0.3s ease;
+    margin-top: 1.5rem;
 }
 
-input[type="submit"]:hover,
-button[type="submit"]:hover,
-.register-btn:hover {
-    background-color: #0052cc;
-    box-shadow: 0 6px 12px rgba(0, 102, 255, 0.3);
+button:hover {
+    background-color: var(--secondary-color);
 }
 
-/* Login Link Section */
 .login-section {
     text-align: center;
-    margin-top: -50px;
-    margin-bottom: 20px;
-    font-size: 14px;
-    color: #333;
+    margin-top: 1rem;
 }
 
 .login-section a {
-    color: #0066ff;
+    color: var(--primary-color);
     text-decoration: none;
-    margin-left: 5px;
 }
 
 .login-section a:hover {
     text-decoration: underline;
-}
-
-/* Rest of the previous styles */
-/* Labels */
-label {
-    display: block;
-    margin-bottom: 5px;
-    color: #000000;
-    font-weight: 500;
-}
-
-/* Field Groups */
-.form-group {
-    margin-bottom: 20px;
-}
-
-/* Password Requirements */
-ul {
-    padding-left: 20px;
-    margin: 10px 0;
-    color: #666;
-    font-size: 14px;
-}
-
-/* Error Messages */
-.error-message {
-    color: #dc3545;
-    font-size: 14px;
-    margin-top: 5px;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    body {
-        padding: 10px;
-    }
-    
-    .container,
-    form {
-        padding: 20px;
-    }
 }
