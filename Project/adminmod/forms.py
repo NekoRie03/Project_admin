@@ -90,8 +90,9 @@ class StudentRegistrationForm(forms.ModelForm):
 class StudentRegistrationAdminForm(forms.ModelForm):
     user_username = forms.CharField(
         max_length=150,
-        required=True,
-        label="Username"
+        required=False,
+        label="Username",
+        disabled=True
     )
     user_first_name = forms.CharField(
         max_length=30,
@@ -165,12 +166,23 @@ class StudentRegistrationAdminForm(forms.ModelForm):
         current_user = kwargs.pop('current_user', None)
         super().__init__(*args, **kwargs)
 
+        # If this is an existing instance
+        if self.instance and self.instance.user_id:
+            self.fields['user_username'].initial = self.instance.user.username
+            self.fields['user_username'].widget.attrs['readonly'] = True
+            self.fields['user_username'].disabled = True
+
         # Make admin_password optional if no current user
         if not current_user:
             self.fields['admin_password'].required = False
             self.fields['admin_password'].widget.attrs['disabled'] = True
 
     def clean_user_username(self):
+        # If this is an existing instance, return the current username without validation
+        if self.instance and self.instance.user_id:
+            return self.instance.user.username
+            
+        # For new instances, perform the original validation
         username = self.cleaned_data.get('user_username')
         if not username:
             raise ValidationError("Username is required.")
@@ -221,8 +233,12 @@ class StudentRegistrationAdminForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
 
-        # Ensure all required fields are present
-        required_fields = ['user_username', 'user_first_name', 'user_last_name', 'user_email', 'program', 'section']
+        # Modify the required fields check
+        required_fields = ['user_first_name', 'user_last_name', 'user_email', 'program', 'section']
+        # Only check username requirement for new instances
+        if not self.instance or not self.instance.user_id:
+            required_fields.append('user_username')
+            
         for field in required_fields:
             if not cleaned_data.get(field):
                 self.add_error(field, "This field is required.")

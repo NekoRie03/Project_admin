@@ -5,6 +5,7 @@ from django.dispatch import receiver
 from django.forms import ValidationError
 from django.utils import timezone
 from django.urls import reverse
+from django.db.models import Sum
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)
@@ -55,6 +56,7 @@ class StudentRegistration(models.Model):
     
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     is_approved = models.BooleanField(null=True, default=None, choices=STATUS_CHOICES)
+    qr_code = models.CharField(max_length=100, unique=True, null=True, blank=True)
     
     # New fields for Program and Section
     program = models.ForeignKey(Program, on_delete=models.SET_NULL, null=True)
@@ -183,9 +185,8 @@ class Violation(models.Model):
 
 class Sanction(models.Model):
     DURATION_UNITS = [
-        ('days', 'Days'),
-        ('weeks', 'Weeks'),
-        ('months', 'Months'),
+        ('hour', 'Hour'),
+        ('hours', 'Hours'),
     ]
     
     violation = models.ForeignKey(Violation, on_delete=models.CASCADE, related_name='sanctions')
@@ -195,7 +196,7 @@ class Sanction(models.Model):
     duration_unit = models.CharField(
         max_length=10, 
         choices=DURATION_UNITS, 
-        default='days'
+        default='hours'
     )
     
     def __str__(self):
@@ -207,9 +208,8 @@ class Sanction(models.Model):
         unique_together = ['violation', 'name']
         ordering = ['violation', 'name']
     DURATION_UNITS = [
-        ('days', 'Days'),
-        ('weeks', 'Weeks'),
-        ('months', 'Months'),
+        ('hour', 'Hour'),
+        ('hours', 'Hours'),
     ]
     violation = models.ForeignKey('Violation', on_delete=models.CASCADE, related_name='sanctions')
     name = models.CharField(max_length=100)
@@ -217,7 +217,7 @@ class Sanction(models.Model):
     duration_unit = models.CharField(
         max_length=10, 
         choices=DURATION_UNITS, 
-        default='days'
+        default='hours'
     )
     created_at = models.DateTimeField(default=timezone.now)
     
@@ -235,13 +235,48 @@ class Sanction(models.Model):
         unique_together = ['violation', 'name']
         ordering = ['violation', 'name']
         
+# models.py
 class ViolationRecord(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'STUDENT'})
     violation = models.ForeignKey(Violation, on_delete=models.CASCADE)
     sanction = models.ForeignKey(Sanction, on_delete=models.SET_NULL, null=True, blank=True)
+    qr_code = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    time_in = models.DateTimeField(null=True, blank=True)
+    time_out = models.DateTimeField(null=True, blank=True)
+    total_hours_complied = models.FloatField(default=0.0)
     recorded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='recorded_violations')
     recorded_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        sanction_info = f" - {self.sanction}" if self.sanction else ""
-        return f"{self.student.get_full_name()} - {self.violation.name}{sanction_info}"
+    def save(self, *args, **kwargs):
+        # Ensure qr_code is copied from StudentRegistration if not already set
+        if not self.qr_code:
+            try:
+                # Access the student's registration and get the qr_code
+                student_registration = self.student.studentregistration  # Assuming the related name is 'studentregistration'
+                if student_registration and student_registration.qr_code:
+                    self.qr_code = student_registration.qr_code
+            except StudentRegistration.DoesNotExist:
+                pass  # Handle case where there's no registration for the student
+
+        # Call the parent save method to actually save the object
+        super().save(*args, **kwargs)
+
+    def update_total_hours(self):
+        if self.time_in and self.time_out:
+            duration = (self.time_out - self.time_in).total_seconds() / 3600.0  # Convert seconds to hours
+            self.total_hours_complied += duration
+            self.time_in = None  # Reset time_in after calculation
+            self.time_out = None  # Reset time_out after calculation
+            self.save()
+
+    def is_completed(self):
+        if not self.sanction:
+            return False  # If no sanction is assigned, it cannot be completed
+        total_duration = self.sanction.duration_value
+        return self.total_hours_complied >= total_duration
+
+    def hours_remaining(self):
+        if self.sanction:
+            remaining_hours = self.sanction.duration_value - self.total_hours_complied
+            return max(remaining_hours, 0)  # Ensure that remaining hours don't go negative
+        return 0

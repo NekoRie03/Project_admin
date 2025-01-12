@@ -58,7 +58,7 @@
         }
 
         .form-group input {
-            width: 100%;
+            width: 93%;
             padding: 0.75rem;
             border: 1px solid var(--background-color);
             border-radius: 0.5rem;
@@ -122,6 +122,7 @@
                 <button type="submit" class="btn">Login</button>
                 <div class="text-center">
                     <p>Don't have an account? <a href="{% url 'student_signup' %}">Sign up</a></p>
+                    <p><a href="{% url 'reset_password' %}">Forgot Password?</a></p>
                 </div>
             </form>
         </div>
