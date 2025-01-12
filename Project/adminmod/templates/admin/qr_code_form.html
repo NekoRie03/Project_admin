@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>QR Code Action</title>
+</head>
+<body>
+    <h2>{{ title }}</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="qr_code">Scan or Enter QR Code:</label>
+        <input type="text" name="qr_code" id="qr_code" required>
+        <button type="submit">{{ button_text }}</button>
+    </form>
+    <a href="{{ request.META.HTTP_REFERER }}">Back</a>
+</body>
+</html>

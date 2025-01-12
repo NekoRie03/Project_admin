@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+    </style>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Full Name</th>
+                <th>Program</th>
+                <th>Section</th>
+                <th>Registration Date</th>
+                <th>Approval Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reg in registrations %}
+            <tr>
+                <td>{{ reg.user.username }}</td>
+                <td>{{ reg.user.first_name }} {{ reg.user.last_name }}</td>
+                <td>{{ reg.program.name }}</td>
+                <td>{{ reg.section.name }}</td>
+                <td>{{ reg.registration_date|date:"Y-m-d H:i:s" }}</td>
+                <td>{{ reg.get_is_approved_display }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

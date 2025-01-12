@@ -10,11 +10,11 @@
             --secondary-color: #818cf8;
             --background-color: #f3f4f6;
             --card-background: #ffffff;
-            --text-primary: #111827;
+            --text-primary:rgb(0, 0, 0);
             --text-secondary: #6b7280;
             --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
-
+    
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--background-color);
@@ -25,8 +25,9 @@
             align-items: center;
             height: 100vh;
             margin: 0;
+            overflow-y: auto; /* Enable scrolling for smaller viewports */
         }
-
+    
         .card {
             background-color: var(--card-background);
             border-radius: 1rem;
@@ -34,29 +35,32 @@
             box-shadow: var(--shadow);
             width: 100%;
             max-width: 500px;
+            max-height: 90vh; /* Prevent the card from exceeding viewport height */
+            overflow-y: auto; /* Allow scrolling within the card if necessary */
+            box-sizing: border-box; /* Ensure padding is included in width/height */
         }
-
+    
         .card-header {
             text-align: center;
             margin-bottom: 1.5rem;
         }
-
+    
         .card-header h3 {
             color: var(--primary-color);
             font-weight: bold;
         }
-
+    
         .form-group {
             margin-bottom: 1rem;
         }
-
+    
         .form-group label {
             font-size: 0.875rem;
             color: var(--text-secondary);
             margin-bottom: 0.5rem;
             display: block;
         }
-
+    
         .form-group input,
         .form-group select {
             width: 100%;
@@ -65,7 +69,7 @@
             border-radius: 0.5rem;
             font-size: 1rem;
         }
-
+    
         .btn {
             background-color: var(--primary-color);
             color: white;
@@ -76,25 +80,26 @@
             width: 100%;
             cursor: pointer;
         }
-
+    
         .btn:hover {
             background-color: var(--secondary-color);
         }
-
+    
         .text-center {
             text-align: center;
             margin-top: 1rem;
         }
-
+    
         .text-center a {
             color: var(--primary-color);
             text-decoration: none;
         }
-
+    
         .text-center a:hover {
             text-decoration: underline;
         }
     </style>
+    
 </head>
 <body>
     <div class="card">

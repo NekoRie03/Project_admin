@@ -144,15 +144,29 @@ def redirect_user_after_login(user):
 
 @allowed_roles([User.Role.STUDENT])
 def student_dashboard(request):
-    violations = ViolationRecord.objects.filter(student=request.user)
+    # Retrieve all violation records for the logged-in student
+    violations = ViolationRecord.objects.filter(student=request.user).select_related('sanction', 'violation')
+
+    # Annotate violations with additional computed fields
+    for record in violations:
+        if record.sanction:
+            record.remaining_hours = max(0, record.sanction.duration_value - record.total_hours_complied)  # Ensure no negative hours
+            record.is_completed = record.remaining_hours <= 0  # Add a flag for completed status
+        else:
+            # Handle cases where no sanction is assigned
+            record.remaining_hours = None
+            record.is_completed = False  # Default to not completed
+
     violation_count = violations.count()
-    # Get the student registration data
     student_registration = request.user.studentregistration
+
     return render(request, 'student/dashboard.html', {
         'violations': violations, 
         'violation_count': violation_count,
-        'student_registration': student_registration
+        'student_registration': student_registration,
     })
+
+
 
 @allowed_roles([User.Role.GUARD])
 def guard_dashboard(request):

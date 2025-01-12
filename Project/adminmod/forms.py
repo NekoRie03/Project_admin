@@ -88,10 +88,43 @@ class StudentRegistrationForm(forms.ModelForm):
             self.fields['section'].queryset = Section.objects.all()
         
 class StudentRegistrationAdminForm(forms.ModelForm):
+<<<<<<< HEAD
+    user_username = forms.CharField(
+        max_length=150,
+        required=False,
+        label="Username",
+        disabled=True
+    )
+    user_first_name = forms.CharField(
+        max_length=30,
+        required=True,
+        label="First Name"
+    )
+    user_last_name = forms.CharField(
+        max_length=30,
+        required=True,
+        label="Last Name"
+    )
+    user_email = forms.EmailField(
+        required=True,
+        label="Email"
+    )
+    password1 = forms.CharField(
+        label="Password",
+        widget=forms.PasswordInput,
+        required=True
+    )
+    password2 = forms.CharField(
+        label="Confirm Password",
+        widget=forms.PasswordInput,
+        required=True
+    )
+=======
     user_username = forms.CharField(max_length=150, required=False, label="Username")
     user_first_name = forms.CharField(max_length=30, required=False, label="First Name")
     user_last_name = forms.CharField(max_length=30, required=False, label="Last Name")
     user_email = forms.EmailField(required=False, label="Email")
+>>>>>>> 0b8d858c28a18d3c29bc3fc591f954e1032fcf60
     admin_password = forms.CharField(
         label="Admin Password Confirmation",
         widget=forms.PasswordInput,
@@ -117,7 +150,69 @@ class StudentRegistrationAdminForm(forms.ModelForm):
         self.current_user = kwargs.pop('current_user', None)
         super().__init__(*args, **kwargs)
         
+<<<<<<< HEAD
+        # Verify the admin password belongs to the current admin user
+        if not authenticate(username=current_user.username, password=admin_password):
+            raise ValidationError("Incorrect admin password.")
+        return admin_password
+
+    def __init__(self, *args, **kwargs):
+        current_user = kwargs.pop('current_user', None)
+        super().__init__(*args, **kwargs)
+
+        # If this is an existing instance
+        if self.instance and self.instance.user_id:
+            self.fields['user_username'].initial = self.instance.user.username
+            self.fields['user_username'].widget.attrs['readonly'] = True
+            self.fields['user_username'].disabled = True
+
+        # Make admin_password optional if no current user
+        if not current_user:
+            self.fields['admin_password'].required = False
+            self.fields['admin_password'].widget.attrs['disabled'] = True
+
+    def clean_user_username(self):
+        # If this is an existing instance, return the current username without validation
+        if self.instance and self.instance.user_id:
+            return self.instance.user.username
+            
+        # For new instances, perform the original validation
+        username = self.cleaned_data.get('user_username')
+        if not username:
+            raise ValidationError("Username is required.")
+        if User.objects.filter(username=username).exists():
+            raise ValidationError("This username is already taken.")
+        return username
+
+    def save(self, commit=True):
+        # Create the related user object
+        user = User.objects.create(
+            username=self.cleaned_data['user_username'],
+            first_name=self.cleaned_data['user_first_name'],
+            last_name=self.cleaned_data['user_last_name'],
+            email=self.cleaned_data['user_email'],
+            role=User.Role.STUDENT
+        )
+        user.set_password(self.cleaned_data['password1'])
+        user.save()
+
+        # Assign the user to the StudentRegistration instance
+        self.instance.user = user
+
+        # Ensure is_approved is set to None (Pending) by default
+        if self.instance.is_approved is None:
+            self.instance.is_approved = None
+
+        return super().save(commit)
+
+    def __init__(self, *args, **kwargs):
+        current_user = kwargs.pop('current_user', None)  # Pass current user explicitly
+        super().__init__(*args, **kwargs)
+
+        # Pre-populate fields if an instance exists and has a user
+=======
         # Pre-populate user fields if instance exists
+>>>>>>> 0b8d858c28a18d3c29bc3fc591f954e1032fcf60
         if self.instance and self.instance.user_id:
             self.fields['user_username'].initial = self.instance.user.username
             self.fields['user_first_name'].initial = self.instance.user.first_name
@@ -146,11 +241,25 @@ class StudentRegistrationAdminForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+<<<<<<< HEAD
+
+        # Modify the required fields check
+        required_fields = ['user_first_name', 'user_last_name', 'user_email', 'program', 'section']
+        # Only check username requirement for new instances
+        if not self.instance or not self.instance.user_id:
+            required_fields.append('user_username')
+            
+        for field in required_fields:
+            if not cleaned_data.get(field):
+                self.add_error(field, "This field is required.")
+
+=======
         if not self.instance.pk:  # Only validate required fields for new registrations
             required_fields = ['user_username', 'user_first_name', 'user_last_name', 'user_email']
             for field in required_fields:
                 if not cleaned_data.get(field):
                     self.add_error(field, "This field is required.")
+>>>>>>> 0b8d858c28a18d3c29bc3fc591f954e1032fcf60
         return cleaned_data
 
 class StaffSignupForm(UserCreationForm):
